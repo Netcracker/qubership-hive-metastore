@@ -1,0 +1,68 @@
+{{/*
+ Copyright 2024-2025 NetCracker Technology Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/}}
+
+{{ if .Values.prometheusRules.alert.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app.kubernetes.io/component: monitoring
+    prometheus: hive-metastore-rules
+    role: alert-rules
+    {{- include "all_objects_labels" . | nindent 4 }}
+    {{- include "prometheus_operator_label" . | nindent 4 }}
+  name: hive-metastore-prometheus-rules
+spec:
+  groups:
+  - name: {{ .Release.Namespace }}
+    rules:
+    - alert: HiveMetastoreCPUusage
+      annotations:
+        summary: Some of Hive Metastore pods CPU load is higher than specified threshold
+        description: 'Hive Metastore CPU load is higher than {{ default 90 .Values.prometheusRules.alert.cpuThreshold }} percent on {{ .Release.Namespace }}'
+      expr: max(rate(container_cpu_usage_seconds_total{image!="", namespace="{{ .Release.Namespace }}", container!="POD", pod=~"hive-metastore.*"}[1m])) / max(kube_pod_container_resource_limits_cpu_cores{namespace="{{ .Release.Namespace }}", container="hive-metastore"}) * 100 > {{ default 90 .Values.prometheusRules.alert.cpuThreshold }}
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+    - alert: HiveMetastoreMemoryUsage
+      annotations:
+        summary: Some of Hive Metastore pods memory usage is higher than specified threshold
+        description: 'Hive Metastore memory usage is higher than {{ default 90 .Values.prometheusRules.alert.memoryThreshold }} percent on {{ .Release.Namespace }}'
+      expr: max(container_memory_working_set_bytes{image!="", namespace="{{ .Release.Namespace }}", container!="POD", pod=~"hive-metastore.*"}) / max(kube_pod_container_resource_limits_memory_bytes{namespace="{{ .Release.Namespace }}", container="hive-metastore"}) * 100 > {{ default 90 .Values.prometheusRules.alert.memoryThreshold }}
+      labels:
+        severity: warning
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+    - alert: HiveMetastoreIsDegraded
+      annotations:
+        summary: Hive Metastore Is Degraded
+        description: 'Some of Hive Metastore pods went down on {{ .Release.Namespace }}'
+      expr: kube_replicaset_status_ready_replicas{namespace="{{ .Release.Namespace }}", replicaset=~"hive-metastore.*"} < kube_replicaset_spec_replicas{namespace="{{ .Release.Namespace }}", replicaset=~"hive-metastore.*"}
+      labels:
+        severity: high
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+    - alert: HiveMetastoreIsDown
+      annotations:
+        summary: Hive Metastore is down
+        description: 'Hive Metastore is down on {{ .Release.Namespace }}'
+      expr: absent(kube_pod_status_phase{namespace="{{ .Release.Namespace }}", exported_pod=~"hive-metastore.*", pod=~"hive-metastore.*", phase="Running"} == 1)
+      labels:
+        severity: critical
+        namespace: {{ .Release.Namespace }}
+        service: {{ .Release.Name }}
+{{ end }}

@@ -1,0 +1,177 @@
+{{/*
+ Copyright 2024-2025 NetCracker Technology Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hive-metastore.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "all_objects_labels" . | nindent 4 }}
+    {{- include "deployment_and_service_only_labels" . | nindent 4 }}
+    {{- include "deployment_only_labels" . | nindent 4 }}
+    {{- with .Values.labels }}
+    {{ toYaml . | indent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "selector_labels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "all_objects_labels" . | nindent 8 }}
+        {{- include "deployment_and_service_only_labels" . | nindent 8 }}
+        {{- include "deployment_only_labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ template "hivemetastore_image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            {{- if .Values.env }}
+            {{- toYaml .Values.env | nindent 12 }}
+            {{- end }}
+            - name: "HIVE_SERVICE_PORT"
+              value: "{{ .Values.service.port }}"
+            - name: "PG_USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  key: pg_username
+                  name: {{ .Release.Name }}-credentials-secret
+            - name: "PG_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: pg_password
+                  name: {{ .Release.Name }}-credentials-secret
+            - name: "HIVE_USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  key: hive_username
+                  name: {{ .Release.Name }}-credentials-secret
+            - name: "HIVE_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: hive_password
+                  name: {{ .Release.Name }}-credentials-secret
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - name: metrics
+              containerPort: 9028
+              protocol: TCP
+          volumeMounts:
+            - name: log4j2-properties
+              mountPath: /opt/hive-metastore/conf/metastore-log4j2.properties
+              subPath: log4j2.properties
+            - name: metastore-cfg-vol
+              mountPath: /opt/hive-metastore/conf/metastore-site.xml
+              subPath: metastore-site.xml
+            - name: metastore-cfg-secret
+              mountPath: /opt/hive-metastore/conf/hivemetastore-site.xml
+              subPath: hivemetastore-site.xml
+            - name: metastore-cfg-secret
+              mountPath: /opt/hadoop/etc/hadoop/core-site.xml
+              subPath: core-site.xml
+            {{- range .Values.secretMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .path }}
+              subPath: {{ .subPath }}
+            {{- end }}
+            - name: jmx-cfg-vol
+              mountPath: /opt/hive-metastore/conf/jmx-exporter-config.yaml
+              subPath: jmx-exporter-config.yaml
+            {{- if .Values.extraVolumeMounts }}
+              {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 12 }}
+            {{- end }}
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - |-
+                  /opt/hive-metastore/bin/schematool  -verbose -info -dbType postgres -userName $PG_USERNAME -passWord $PG_PASSWORD -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName $HIVE_USERNAME -passWord $HIVE_PASSWORD
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 30 }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold | default 6 }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold | default 1 }}
+          livenessProbe:
+            tcpSocket:
+              port: 9028
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds | default 60 }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds | default 10 }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold | default 6 }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold | default 1 }}
+          resources:
+            {{- toYaml .Values.hiveMetastore.resources | nindent 12 }}
+      volumes:
+        - name: log4j2-properties
+          configMap:
+            name: log4j2-properties
+        - name: metastore-cfg-vol
+          configMap:
+            name: metastore-cfg
+        - name: metastore-cfg-secret
+          secret:
+            secretName: metastore-cfg-secret
+            items:
+              - key: hivemetastore-site.xml
+                path: hivemetastore-site.xml
+              - key: core-site.xml
+                path: core-site.xml
+        {{- range .Values.secretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+        - name: jmx-cfg-vol
+          configMap:
+            name: jmx-cfg
+        {{- if .Values.extraVolumes }}
+          {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

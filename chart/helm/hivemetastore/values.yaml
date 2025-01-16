@@ -1,0 +1,436 @@
+# Copyright 2024-2025 NetCracker Technology Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Default values for hive-metastore.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: ghcr.io/netcracker/qubership-hive-metastore
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: v001
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "hive-metastore"
+
+replicaCount: 1
+
+priorityClassName: ~
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 10002
+
+monitoring:
+  enabled: true
+  interval: 60s
+
+prometheusRules:
+  alert:
+    enabled: true
+    cpuThreshold: 90
+    memoryThreshold: 90
+
+service:
+  type: ClusterIP
+  port: 9083
+
+tls:
+  enabled: false
+  serverSideTls: false
+  generateCerts:
+    enabled: false
+    secretName: hive-metastore-cm-cert
+    clusterIssuerName: ~
+    keystores:
+      jks:
+        create: false
+    subjectAlternativeName:
+      additionalDnsNames: [ ]
+      additionalIpAddresses: [ ]
+  certificates:
+    jks_key: ""
+    keystore_jks: ""
+    truststore_jks: ""
+
+extraSecrets: {}
+#  mysslcert:
+#    stringData: |
+#      mysslcert.crt: |
+#        -----BEGIN CERTIFICATE-----
+#        Secret
+#        Content
+#        Goes
+#        Here
+#        -----END CERTIFICATE-----
+#  s3cert:
+#    stringData: |
+#      s3cert.crt: |
+#        -----BEGIN CERTIFICATE-----
+#        Secret
+#        Content
+#        Goes
+#        Here
+#        -----END CERTIFICATE-----
+
+extraVolumes: []
+#  - name: tls-custom-cert
+#    secret:
+#      secretName: mysslcert
+#  - name: tls-s3-cert
+#    secret:
+#      secretName: s3cert
+
+extraVolumeMounts: []
+#  - name: tls-custom-cert
+#    mountPath: /home/metastore/.postgresql/root.crt
+#    subPath: mysslcert.crt
+#    readOnly: true
+#  - name: tls-custom-cert
+#    mountPath: /opt/hive-metastore/trustcerts/ca.crt
+#    subPath: mysslcert.crt
+#    readOnly: true
+#  - name: tls-s3-cert
+#    mountPath: /opt/hive-metastore/trustcerts/s3cert.crt
+#    subPath: s3cert.crt
+#    readOnly: true
+
+env: []
+#env:
+#  - name: JAVA_TOOL_OPTIONS
+#    value: '-Dcom.amazonaws.sdk.disableCertChecking'
+#  - name: CURL_CA_BUNDLE
+#    value: '/etc/ssl/certs/s3.pem'
+
+hiveMetastore:
+  resources:
+    limits:
+      cpu: 700m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 256Mi
+
+livenessProbe: {}
+  # initialDelaySeconds: 20
+  # periodSeconds: 10
+  # timeoutSeconds: 5
+  # failureThreshold: 6
+# successThreshold: 1
+readinessProbe: {}
+  # initialDelaySeconds: 20
+  # periodSeconds: 10
+  # timeoutSeconds: 5
+  # failureThreshold: 6
+# successThreshold: 1
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+secretMounts: []
+#  - name: metastore-cm-cert
+#    secretName: hive-metastore-cm-cert
+#    path: /opt/hive-metastore/trustcerts/ca.crt
+#    subPath: ca.crt
+#  - name: sert
+#    secretName: hive-metastore-cm-cert
+#    path: /opt/hive-metastore/certs/
+#  - name: sample-secret
+#    secretName: sample-secret
+#    path: /secrets/sample.json
+
+hiveInitJob:
+  enabled: true
+  upgradeSchema: false
+  cleanupDB: false
+  priorityClassName: ~
+  initAnnotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 300m
+      memory: 300Mi
+
+s3InitJob:
+  enabled: false
+  awsSigV4: "aws:minio:s3:s3"
+  disableTLSValidation: false
+  priorityClassName: ~
+  initAnnotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+s3:
+  endpoint: ""
+  accessKey: ""
+  secretKey: ""
+  warehouseDir: s3a://warehouse/hive
+
+hive:
+  # hive PG user
+  user: ""
+  # hive PG user password
+  password: ""
+  db: metastore_db
+
+postgres:
+  host: pg-patroni.postgres.svc
+  port: 5432
+  driver: org.postgresql.Driver
+  # PG admin credentials. Can be used to automate PG database creation.
+  adminUser: ""
+  adminPassword: ""
+  psqlParams: ""
+  jdbcParams: ""
+#  psqlParams: "sslmode=verify-ca"
+#  jdbcParams: "ssl=true,sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory"
+
+initJobCredentialsSecret:
+  annotations:
+    "helm.sh/hook": pre-install, pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+    "helm.sh/hook-weight": "-15"
+
+metastoreConfig:
+  metastoreSiteProperties: |
+    <configuration>
+      <property>
+        <name>metastore.warehouse.dir</name>
+        <value>{{ .Values.s3.warehouseDir }}</value>
+      </property>
+      <property>
+        <name>metastore.thrift.port</name>
+        <value>{{ .Values.service.port }}</value>
+      </property>
+      <property>
+        <name>metastore.initial.metadata.count.enabled</name>
+        <value>true</value>
+        <description>Enable a metadata count at metastore startup for metrics.</description>
+      </property>
+      <property>
+        <name>metastore.metrics.enabled</name>
+        <value>true</value>
+        <description>Enable metrics on the metastore.</description>
+      </property>
+      <property>
+        <name>metastore.metrics.reporters</name>
+        <value>JMX</value>
+      <description>A comma separated list of metrics reporters to start</description>
+      </property>
+      <property>
+        <name>metastore.async.log.enabled</name>
+        <value>true</value>
+      </property>
+    </configuration>
+
+metastoreConfigsecret:
+  metastoreSitePropertiesSecret: |
+    <configuration>
+    {{- if .Values.tls.serverSideTls }}
+      <property>
+        <name>metastore.use.SSL</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>metastore.keystore.path</name>
+        <value>/opt/hive-metastore/certs/keystore.jks</value>
+      </property>
+      <property>
+        <name>metastore.keystore.password</name>
+        <value>{{ .Values.tls.certificates.jks_key }}</value>
+      </property>
+    {{- end }}
+      <property>
+        <name>metastore.task.threads.always</name>
+        <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask</value>
+      </property>
+      <property>
+        <name>metastore.expression.proxy</name>
+        <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>{{ .Values.postgres.driver }}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&amp;")}}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>{{ include "postgres.hive.user" . }}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>{{ include "postgres.hive.password" . }}</value>
+      </property>
+    </configuration>
+
+  coreSitePropertiesSecret: |
+    <configuration>
+      <property>
+        <name>fs.s3a.access.key</name>
+        <value>{{ include "s3.accessKey" . }}</value>
+      </property>
+      <property>
+        <name>fs.s3a.secret.key</name>
+        <value>{{ include "s3.secretKey" . }}</value>
+      </property>
+      <property>
+        <name>fs.s3a.connection.ssl.enabled</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>fs.s3a.endpoint</name>
+        <value>{{ include "s3.endpoint" . }}</value>
+      </property>
+      <property>
+        <name>fs.s3a.path.style.access</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>fs.s3a.impl</name>
+        <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>
+      </property>
+      <property>
+        <name>fs.s3a.fast.upload</name>
+        <value>true</value>
+      </property>
+    </configuration>
+
+jmxConfig:
+  jmxExporterConfig: |
+
+    startDelaySeconds: 0
+    ssl: false
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    attrNameSnakeCase: true
+    includeObjectNames:
+      - "metrics:*"
+      - "org.apache.hadoop.hive.metastore:*"
+      - "jvm:*"
+      - "process:*"
+      - "java.lang:*"
+    rules:         
+      - pattern: "metrics<name=total_count_dbs><>Value"
+        name: "count_db"
+        help: "Total DBs count."
+      - pattern: "metrics<name=delete_total_count_dbs><>Count"
+        name: "delete_total_count_db"
+        help: "metrics_delete_total_count_dbs_count Attribute exposed for management"
+      - pattern: "metrics<name=total_count_tables><>Value"
+        name: "metrics_count_tables"
+        help: "metrics_total_count_tables_value Attribute exposed for management"
+      - pattern: "metrics<name=delete_total_count_tables><>Count"
+        name: "delete_total_count_tables"
+        help: "Count table delete"
+      - pattern: "metrics<name=open_connections><>Count"
+        name: "open_connections_count"
+        help: "Open connections attribute exposed for management"
+      - pattern: "metrics<name=memory.heap.used><>Value"
+        name: "metrics_heap_used"
+        help: "metrics_heap_used_value metrics_memory_heap_used_value Attribute exposed for management"
+      - pattern: "java.lang<name=MarkSweepCompact, type=GarbageCollector><>CollectionTime"
+        name: "marksweepcompact_collectionTime"
+        help: "java_lang_marksweepcompact_collectiontime CollectionTime"
+      - pattern: "metrics<name=total_count_partitions><>Value"
+        name: "metrics_total_count_partitions_hv"
+        help: "metrics_total_count_partitions_value Attribute exposed for management"
+      - pattern: "metrics<name=create_total_count_partitions><>Count"
+        name: "metrics_create_total_count_partitions_hv"
+        help: "metrics_create_total_count_partitions_count Attribute exposed for management"
+      - pattern: "metrics<name=delete_total_count_partitions><>Count"
+        name: "metrics_delete_total_count_partitions_hv"
+        help: "metrics_delete_total_count_partitions_count Attribute exposed for management"
+
+log4j2Properties: |
+  status = INFO
+  name = MetastoreLog4j2
+  packages = org.apache.hadoop.hive.metastore
+
+  # list of properties
+  property.metastore.log.level = INFO
+  property.metastore.root.logger = console
+  property.metastore.log.dir = ${sys:java.io.tmpdir}/${sys:user.name}
+  property.metastore.log.file = metastore.log
+  property.hive.perflogger.log.level = INFO
+
+  # list of all appenders
+  appenders = console
+
+  # console appender
+  appender.console.type = Console
+  appender.console.name = console
+  appender.console.target = SYSTEM_ERR
+  appender.console.layout.type = PatternLayout
+  appender.console.layout.pattern = %d{ISO8601} %5p [%t] %c{2}: %m%n
+
+  # list of all loggers
+  loggers = DataNucleus, Datastore, JPOX, PerfLogger
+
+  logger.DataNucleus.name = DataNucleus
+  logger.DataNucleus.level = ERROR
+
+  logger.Datastore.name = Datastore
+  logger.Datastore.level = ERROR
+
+  logger.JPOX.name = JPOX
+  logger.JPOX.level = ERROR
+  
+  logger.PerfLogger.name = org.apache.hadoop.hive.ql.log.PerfLogger
+  logger.PerfLogger.level = ${sys:hive.perflogger.log.level}
+
+  # root logger
+  rootLogger.level = ${sys:metastore.log.level}
+  rootLogger.appenderRefs = root
+  rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}
