@@ -15,7 +15,7 @@
 */}}
 
 {{- define "certDnsNames" -}}
-  {{- $dnsNames := list "localhost" "hive-metastore" (printf "%s.%s" "hive-metastore" .Release.Namespace) (printf "%s.%s.svc" "hive-metastore" .Release.Namespace) -}}
+  {{- $dnsNames := list "localhost" "hive-metastore" (printf "%s.%s" "hive-metastore" .Release.Namespace) (printf "%s.%s.svc" "hive-metastore" .Release.Namespace) (printf "%s.%s.svc.cluster.local" "hive-metastore" .Release.Namespace) -}}
     {{- $dnsNames = concat $dnsNames .Values.tls.generateCerts.subjectAlternativeName.additionalDnsNames -}}
   {{- $dnsNames | toYaml -}}
 {{- end -}}
