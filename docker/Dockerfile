@@ -16,6 +16,8 @@ FROM eclipse-temurin:17-jre-noble
 
 USER root
 
+COPY --chmod=0755 docker/entrypoint.sh /opt/entrypoint.sh
+
 RUN set -ex && \
 apt-get update && apt-get install -y procps postgresql-client --no-install-recommends
 
@@ -57,8 +59,6 @@ RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoo
 
 RUN mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
-
-COPY --chmod=0755 entrypoint.sh /opt/entrypoint.sh
 
 RUN mkdir -p ${TRUST_CERTS_DIR} && \
     chmod 777 ${JAVA_HOME}/lib/security/cacerts && \

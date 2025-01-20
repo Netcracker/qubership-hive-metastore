@@ -15,6 +15,9 @@ jobs:
           - name: qubership-hive-metastore-transfer
             file: docker-transfer/Dockerfile
             context: ""
+          - name: qubership-hive-metastore
+            file: docker/Dockerfile
+            context: ""
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
