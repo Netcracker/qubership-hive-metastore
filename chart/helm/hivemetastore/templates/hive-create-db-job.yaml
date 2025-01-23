@@ -1,0 +1,229 @@
+{{/*
+ Copyright 2024-2025 NetCracker Technology Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/}}
+
+{{- if .Values.hiveInitJob.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hive-create-db
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "all_objects_labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.hiveInitJob.initAnnotations | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "all_objects_labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        {{- if .Values.extraVolumes }}
+          {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
+        {{- end }}
+        {{- range .Values.secretMounts}}
+        - name: {{.name}}
+          secret:
+            secretName: {{.secretName}}
+        {{- end}}
+      containers:
+      - name: hivemeta
+        image: {{ template "hivemetastore_image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        command: ["/bin/bash"]
+        resources: {{- toYaml .Values.hiveInitJob.resources | nindent 12 }}
+        volumeMounts:
+          {{- if .Values.extraVolumeMounts }}
+            {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 12 }}
+          {{- end }}
+          {{- range .Values.secretMounts}}
+            - name: {{.name}}
+              mountPath: {{.path}}
+              subPath: {{.subPath}}
+          {{- end }}
+
+        args:
+          - "-c"
+          - |-
+            
+            {{ if .Values.tls.enabled }}
+            if [[ "$(ls ${TRUST_CERTS_DIR})" ]]; then
+              for filename in ${TRUST_CERTS_DIR}/*; do
+                echo "Import $filename certificate to Java cacerts"
+                ${JAVA_HOME}/bin/keytool -import -trustcacerts -keystore ${JAVA_HOME}/lib/security/cacerts -storepass changeit -noprompt -alias ${filename} -file ${filename}
+              done;
+            fi
+            {{- end }}
+            
+            {{ if .Values.hiveInitJob.cleanupDB }}
+            
+            echo -e "-----Clean Up DB-------"
+            
+            OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "drop database if exists {{ .Values.hive.db }} with (force);" 2>&1)
+            EXIT_CODE=$?
+            echo "Command output "$OUTPUT""
+            
+            if [ $EXIT_CODE -ne 0 ]
+            then
+              echo "ERROR: Could not drop the database in PG."
+              exit 1
+            else
+              if [[ "$OUTPUT" == *"DROP DATABASE"* ]]
+                then
+                  echo "Hive database has been successfully dropped"
+              fi
+            fi
+            
+            {{ end }}
+            
+            echo -e "\n-----Creating Hive user in PG-----"
+
+            CREATE_USER_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "create user {{ include "postgres.hive.user" . }} with encrypted password '{{ include "postgres.hive.password" . }}';" 2>&1)
+            EXIT_CODE=$?
+            echo "Command output $CREATE_USER_OUTPUT"
+
+            if [ $EXIT_CODE -ne 0 ] && [[ "$CREATE_USER_OUTPUT" != *"role"*"already exists"* ]]
+            then
+              echo "ERROR: Could not create user in PG."
+              exit 1
+            else
+              if [[ "$CREATE_USER_OUTPUT" == *"role"*"already exists"* ]]
+              then
+                echo "Hive user already exists."
+              else
+                if [[ "$CREATE_USER_OUTPUT" == *"CREATE ROLE"* ]]
+                then
+                  echo "Hive user has been successfully created"
+                fi
+              fi
+            fi
+
+            echo -e " \n-----Grant user in schema-----"
+            
+            GRANT_USER=$(psql {{ include "postgres.psql.connection.url" . }} -c "grant usage on schema pg_catalog to {{ include "postgres.hive.user" . }};" 2>&1)
+            EXIT_CODE=$?
+            echo "Command output $GRANT_USER"
+
+            echo -e " \n-----Creating Hive DB in PG-----"
+
+            CREATE_DB_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "create database {{ .Values.hive.db }} owner {{ include "postgres.hive.user" . }};" 2>&1)
+            EXIT_CODE=$?
+            echo "Command output $CREATE_DB_OUTPUT"
+
+            if [ $EXIT_CODE -ne 0 ] && [[ "$CREATE_DB_OUTPUT" != *"database"*"already exists"* ]]
+            then
+              echo "ERROR: Could not create hive database in PG."
+              printf %s "$CREATE_DB_OUTPUT"
+              exit 1
+            else
+              if [[ "$CREATE_DB_OUTPUT" == *"database"*"already exists"* ]]
+              then
+                echo "Hive database already exists."
+              else
+                if [[ "$CREATE_DB_OUTPUT" == *"CREATE DATABASE"* ]]
+                then
+                  echo "Hive database has been successfully created"
+                fi
+              fi
+            fi
+
+
+            echo -e "\n-----Permissions Hive DB in PG-----"
+            
+            PERMISSIONS_DB_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "grant all privileges on database {{ .Values.hive.db }} to {{ include "postgres.hive.user" . }};" 2>&1)
+            EXIT_CODE=$?
+            echo -e "\n-----Permissions Hive DB updated-----"
+            
+            echo -e "\n-----Grants Hive DB in PG-----"
+            
+            GRANTS_DB_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "alter database {{ .Values.hive.db }} owner to {{ include "postgres.hive.user" . }};" 2>&1)
+            EXIT_CODE=$?            
+            echo -e "\n-----Grants Hive DB updated-----"
+
+            {{ if .Values.hiveInitJob.upgradeSchema }}
+
+            echo -e " \n----- Updating Hive Schema-----"
+
+            HIVE_UPDATE_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -upgradeSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -ne 0 ]
+            then
+                echo "ERROR: Hive schema init failed."
+                printf %s "$HIVE_INIT_ERROR"
+                exit 1
+            else
+              echo "Hive schema has been successfully updated"
+            fi
+
+            {{ else }}
+
+            echo -e " \n-----Initializing Hive Schema-----"
+
+            HIVE_INIT_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -initSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -ne 0 ]
+            then
+              if [[ "$HIVE_INIT_ERROR" =~ .*"already exists".* ]]
+              then
+                echo "Hive schema is already initialized."
+              else
+                echo "ERROR: Hive schema init failed."
+                printf %s "$HIVE_INIT_ERROR"
+                exit 1
+              fi
+            else
+              echo "Hive schema has been successfully initialized"
+            fi
+
+            {{ end }}
+
+            echo -e " \n-----Validating Hive Schema-----"
+
+            HIVE_VALID_ERROR=$(/opt/hive-metastore/bin/schematool  -verbose -validate -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1)
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -ne 0 ]
+            then
+              echo "ERROR: Hive schema validation failed."
+              printf %s "$HIVE_VALID_ERROR"
+              if [[ "$HIVE_VALID_ERROR" =~ .*"Failed in schema version validation".* ]]
+              then 
+                echo -e " \n-----Upgrading Hive Schema-----"
+                HIVE_UPGRADE_SCHEMA=$(/opt/hive-metastore/bin/schematool  -verbose -upgradeSchema -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1 > /dev/null)
+                EXIT_CODE=$?
+                if [ $EXIT_CODE -ne 0 ]
+                then
+                  echo "ERROR: Hive schema upgrade failed."
+                  printf %s "$HIVE_UPGRADE_SCHEMA"
+                  exit 1
+                else
+                  echo "Hive Schema successfully upgraded."
+                fi
+              else
+                echo "ERROR: Hive schema validation failed."
+                printf %s "$HIVE_VALID_ERROR"
+                exit 1
+            fi
+            else
+              echo "Hive schema is valid"
+            fi
+
+      restartPolicy: Never
+  backoffLimit: 5
+{{- end }}

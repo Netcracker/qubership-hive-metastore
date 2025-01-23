@@ -1,0 +1,72 @@
+{{/*
+ Copyright 2024-2025 NetCracker Technology Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/}}
+
+{{- define "certDnsNames" -}}
+  {{- $dnsNames := list "localhost" "hive-metastore" (printf "%s.%s" "hive-metastore" .Release.Namespace) (printf "%s.%s.svc" "hive-metastore" .Release.Namespace) (printf "%s.%s.svc.cluster.local" "hive-metastore" .Release.Namespace) -}}
+    {{- $dnsNames = concat $dnsNames .Values.tls.generateCerts.subjectAlternativeName.additionalDnsNames -}}
+  {{- $dnsNames | toYaml -}}
+{{- end -}}
+{{- define "certIpAddresses" -}}
+  {{- $ipAddresses := list "127.0.0.1" -}}
+  {{- $ipAddresses = concat $ipAddresses .Values.tls.generateCerts.subjectAlternativeName.additionalIpAddresses -}}
+  {{- $ipAddresses | toYaml -}}
+{{- end -}}
+
+
+{{- if and (or .Values.tls.enabled .Values.tls.serverSideTls ) .Values.tls.generateCerts.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hive-metastore-certificate
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "all_objects_labels" . | nindent 4 }}
+    {{- include "cert_manager_label" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": "pre-install,pre-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-failed
+    "helm.sh/hook-weight": "-11"
+spec:
+  secretName: {{ .Values.tls.generateCerts.secretName }}
+  duration: {{ default 365 .Values.tls.generateCerts.duration | mul 24 }}h
+  renewBefore: 360h
+  commonName: hive-metastore.svc
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  keystores:
+    jks:
+      create: {{ default false .Values.tls.generateCerts.keystores.jks.create }}
+      passwordSecretRef:
+        key: password-key
+        name: jks-password-secret
+  dnsNames:
+{{ ( include "certDnsNames" . | indent 4 ) }}
+  ipAddresses:
+{{ ( include "certIpAddresses" . | indent 4) }}
+  issuerRef:
+    group: cert-manager.io
+  {{- if .Values.tls.generateCerts.clusterIssuerName }}
+    name: {{ .Values.tls.generateCerts.clusterIssuerName }}
+    kind: ClusterIssuer
+  {{- else }}
+    name: hive-metastore-tls-issuer
+    kind: Issuer
+  {{- end }}
+    group: cert-manager.io
+{{- end }}
