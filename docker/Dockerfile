@@ -14,7 +14,7 @@
 
 FROM alpine:latest AS unpacker
 
-ENV HADOOP_DEP=/opt/hadoop/dependencies
+ENV HADOOP_DEP=/opt/dependencies
 ENV HADOOP_VERSION=3.3.6
 ENV HIVE_VERSION=4.0.1
 
@@ -27,36 +27,15 @@ RUN mkdir -p ${HADOOP_DEP} && \
     curl -k -L https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar --output ${HADOOP_DEP}/postgresql-42.7.4.jar && \
     curl -k -L https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output ${HADOOP_DEP}/jdom2-2.0.6.1.jar && \
     curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar
+    
+RUN mkdir -p /opt/postgresql-42.7.4 /opt/jackson-mapper-asl /opt/hive-metastore /opt/hive-metastore/lib 
 
-FROM eclipse-temurin:17-jre-noble
-
-ENV HIVE_USER_NAME=metastore
-ENV HADOOP_DEP=/opt/hadoop/dependencies
-ENV HADOOP_VERSION=3.3.6
-ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
-ENV HIVE_HOME=/opt/hive-metastore
-ENV HADOOP_HOME=/opt/hadoop
-
-USER root
-
-COPY --chmod=0755 docker/entrypoint.sh /opt/entrypoint.sh
-
-RUN set -ex && \
-apt-get update && apt-get install -y procps postgresql-client --no-install-recommends
-
-RUN groupadd ${HIVE_USER_NAME} --gid 10002 && \
-    useradd ${HIVE_USER_NAME} --uid 10002 --gid 10002 --create-home && \
-    mkdir -p /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME} && \
-    chown -R "${HIVE_USER_NAME}:${HIVE_USER_NAME}" /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME}
-
-RUN mkdir -p /opt/postgresql-42.7.4 /opt/jackson-mapper-asl
-
-COPY --from=unpacker ${HADOOP_DEP}/hadoop-$HADOOP_VERSION opt/hadoop
-COPY --from=unpacker ${HADOOP_DEP}/apache-hive-metastore-4.0.1-bin opt/hive-metastore
-COPY --from=unpacker ${HADOOP_DEP}/jmx_prometheus_javaagent-1.0.1.jar /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar
-COPY --from=unpacker ${HADOOP_DEP}/postgresql-42.7.4.jar /opt/postgresql-42.7.4/postgresql-42.7.4.jar
-COPY --from=unpacker ${HADOOP_DEP}/jdom2-2.0.6.1.jar /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar
-COPY --from=unpacker ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar
+RUN mv ${HADOOP_DEP}/hadoop-$HADOOP_VERSION /opt/hadoop && \
+    mv ${HADOOP_DEP}/apache-hive-metastore-4.0.1-bin /opt/hive-metastore && \
+    mv ${HADOOP_DEP}/jmx_prometheus_javaagent-1.0.1.jar /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
+    mv ${HADOOP_DEP}/postgresql-42.7.4.jar /opt/postgresql-42.7.4/postgresql-42.7.4.jar && \
+    mv ${HADOOP_DEP}/jdom2-2.0.6.1.jar /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
+    mv ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar
 
 RUN rm -r opt/hadoop/share/doc && \
     rm opt/hive-metastore/lib/postgresql-42.5.1.jar && \
@@ -74,6 +53,26 @@ RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoo
 
 RUN mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
+
+FROM eclipse-temurin:17-jre-noble
+
+ENV HIVE_USER_NAME=metastore
+ENV HADOOP_VERSION=3.3.6
+ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
+ENV HIVE_HOME=/opt/hive-metastore
+ENV HADOOP_HOME=/opt/hadoop
+
+USER root
+
+COPY --chmod=0755 docker/entrypoint.sh /opt/entrypoint.sh
+
+RUN set -ex && \
+apt-get update && apt-get install -y procps postgresql-client --no-install-recommends
+
+RUN groupadd ${HIVE_USER_NAME} --gid 10002 && \
+    useradd ${HIVE_USER_NAME} --uid 10002 --gid 10002 --create-home && \
+    mkdir -p /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME} && \
+    chown -R "${HIVE_USER_NAME}:${HIVE_USER_NAME}" /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME}
 
 RUN mkdir -p ${TRUST_CERTS_DIR} && \
     chmod 777 ${JAVA_HOME}/lib/security/cacerts && \
