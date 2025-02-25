@@ -2,12 +2,12 @@ The following topics are covered in this chapter:
 
 * [Prerequisites](#prerequisites)
   * [Common](#common)
-  * [Kubernetes](#common)
-  * [OpenShift](#common)
+  * [Kubernetes](#kubernetes)
+  * [OpenShift](#openshift)
 * [Best Practices and Recommendations](#best-practices-and-recommendations)
   * [HWE](#hwe)
     * [Small](#small)
-    * [Meduim](#medium)
+    * [Medium](#medium)
     * [Large](#large)
 * [Parameters](#parameters)
   * [Hive-Metastore](#hive-metastore)
@@ -74,6 +74,8 @@ securityContext:
 ```
 
 # Best Practices and Recommendations
+
+The best practices and recommendations are given in the below sub-sections.
 
 ## HWE
 
@@ -147,12 +149,12 @@ The following table lists the configurable parameters of the Hive-Metastore char
 | `s3.accessKey`                           | string            | true      | `""`                                                                                                                      | The MinIO access key.                                                                                                                                                                                                                                                                                                                                   |
 | `s3.secretKey`                           | string            | true      | `""`                                                                                                                      | The MinIO secret key.                                                                                                                                                                                                                                                                                                                                   |
 | `s3.warehouseDir`                        | string            | true      | `s3a://warehouse/hive`                                                                                                    | The directory in S3 storage, where Hive-Metastore should store its data.                                                                                                                                                                                                                                                                                |
-| `hive.user`                              | string            | false     | `""`                                                                                                                      | The Hive Metastore to PG connection user that is set as owner of the Hive database. This user is created by  `hiveInitJob`.                                                                                                                                                                                                                             |
+| `hive.user`                              | string            | false     | `""`                                                                                                                      | The Hive Metastore to PG connection user that is set as owner of the Hive database. This user is created by `hiveInitJob`.                                                                                                                                                                                                                             |
 | `hive.password`                          | string            | false     | `""`                                                                                                                      | The Hive Metastore to PG connection user password. The password of the user is created by `hiveInitJob`.                                                                                                                                                                                                                                                |
 | `hive.db`                                | string            | false     | `metastore_db`                                                                                                            | The Hive Metastore database created in PG by `hiveInitJob`.                                                                                                                                                                                                                                                                                             |
 | `postgres.adminUser`                     | string            | true      | `""`                                                                                                                      | The PG user with permission to create a role and a database. This user is used to prepare a database in PG.                                                                                                                                                                                                                                             |
 | `postgres.adminPassword`                 | string            | true      | `""`                                                                                                                      | The password of the user set in `postgres.user`.                                                                                                                                                                                                                                                                                                        |
-| `postgres.host`                          | string            | true      | `""`                                                                                                                      | The PG host where the Hive Metastore DB is located.                                                                                                                                                                                                                                                                                                     |
+| `postgres.host`                          | string            | true      | `""`                                                                                                                      | The PG host, where the Hive Metastore DB is located.                                                                                                                                                                                                                                                                                                     |
 | `postgres.port`                          | string            | true      | `""`                                                                                                                      | The PG port where the Hive Metastore DB is located.                                                                                                                                                                                                                                                                                                     |
 | `postgres.driver`                        | string            | true      | `"org.postgresql.Driver"`                                                                                                 | The PG connection driver.                                                                                                                                                                                                                                                                                                                               |
 | `postgres.psqlParams`                    | string            | false     | `""`                                                                                                                      | PostgreSQL connection parameters used by Hive Metastore database init job.                                                                                                                                                                                                                                                                              |
@@ -183,7 +185,7 @@ The following table lists the configurable parameters of the Hive-Metastore char
 | `extraVolumes`                           | array             | false     | `[]`                                                                                                                      | One or more additional volume mounts to add to Hive Metastore and DB init job pods.                                                                                                                                                                                                                                                                     |
 | `extraVolumeMounts`                      | array             | false     | `[]`                                                                                                                      | One or more additional volume mounts to add to Hive Metastore and DB init job pods.                                                                                                                                                                                                                                                                     |
 | `secretMounts`                           | array             | false     | `[]`                                                                                                                      | One or more existing volume mounts to add to Hive Metastore and DB init job pods.                                                                                                                                                                                                                                                                       |
-| `env`                                    | array             | false     | `[]`                                                                                                                      | Additional env paraeters for Hive Metastore Service.                                                                                                                                                                                                                                                                                                    |
+| `env`                                    | array             | false     | `[]`                                                                                                                      | Additional env parameters for Hive Metastore Service.                                                                                                                                                                                                                                                                                                    |
 
 ```yaml
 # Default log4j2 properties
@@ -503,7 +505,7 @@ Monitoring is represented by Grafana Dashboard. To get the Hive-Metastore dashbo
 ## S3 Initialization Job
 
 Hive Metastore requires a warehouse directory in S3 storage. It is configured by `s3.warehouseDir` deployment parameter.  
-To automatically create the bucket and path, `s3InitJob` should be enabled(`s3InitJob.enabled` parameter must be set to `true`). After the bucket and path are created, a mock file is uploaded to the path to keep the path from being removed. 
+To automatically create the bucket and path, `s3InitJob` should be enabled (`s3InitJob.enabled` parameter must be set to `true`). After the bucket and path are created, a mock file is uploaded to the path to keep the path from being removed. 
 `Curl` communicates with S3 storage by AWS S3 REST API uses `curl`. `Curl` supports AWS V4 signature authentication for requests. 
 
 ```yaml
@@ -532,15 +534,17 @@ By default, `s3InitJob.awsSigV4: "aws:minio:s3:s3"` to work with S3 MinIO. If a 
 
 Configuration string format: <provider1[:prvdr2[:reg[:srv]]]>
 
-- The provider argument is a string that is used by the algorithm when creating outgoing authentication headers.
-- The region argument is a string that points to a geographic area of a resources collection (region-code) when the region name is omitted from the endpoint.
-- The service argument is a string that points to a function provided by a cloud (service-code) when the service name is omitted from the endpoint.
+- The provider argument is a string that is used by the algorithm, when creating outgoing authentication headers.
+- The region argument is a string that points to a geographic area of a resources collection (region-code), when the region name is omitted from the endpoint.
+- The service argument is a string that points to a function provided by a cloud (service-code), when the service name is omitted from the endpoint.
 
 ### TLS 
 
 TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
 
 # Installation
+
+The installation procedure is specified in the below sub-sections.
 
 ## Manual Deployment
 
@@ -591,7 +595,7 @@ Hive-metastore supports the high availability mode.
 
 To do this, you need to specify several replicas for its operation when deploying.
 
-To do this, pass the following parameters to the chart:
+Pass the following parameters to the chart:
 
 ```yaml
 replicaCount: 2 # or more replicas
@@ -607,9 +611,9 @@ replicaCount: 1
 
 # Upgrade
 
-The upgrade process can be performed using [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/).
-It is required to check the new release notes for incompatibility points of parameters with the new version of hive-metastore.
+You can perform the upgrade process using [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/).
+It is required to check the new release notes for incompatibility points of parameters with the new version of Hive-metastore.
 
-**Note**: `hiveInitJob.upgradeSchema` parameter must be set to true when updating from hive 3.* versions to hive 4.* versions and when hive metastore database is not cleaned.
+**Note**: You must set the `hiveInitJob.upgradeSchema` parameter to true when updating from hive 3.* versions to hive 4.* versions and when Hive-metastore database is not cleaned.
 
-**Note**: If you need to change S3 connection properties, Postgres Hive-metastore database must be manually recreated and Hive-metastore must be reinstalled after removing the previous release from the namespace.
+**Note**: If you need to change the S3 connection properties, you must manually recreate the Postgres Hive-metastore database and reinstall Hive-metastore after removing the previous release from the namespace.
