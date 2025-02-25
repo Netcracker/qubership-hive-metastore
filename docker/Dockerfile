@@ -37,11 +37,11 @@ RUN mv ${HADOOP_DEP}/hadoop-$HADOOP_VERSION /opt/hadoop && \
     mv ${HADOOP_DEP}/jdom2-2.0.6.1.jar /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
     mv ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar
 
-RUN rm -r opt/hadoop/share/doc && \
-    rm opt/hive-metastore/lib/postgresql-42.5.1.jar && \
-    rm opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
-    rm opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
-    rm opt/hadoop/share/hadoop/hdfs/lib/jackson-mapper-asl-1.9.13.jar && \
+RUN rm -r /opt/hadoop/share/doc && \
+    rm /opt/hive-metastore/lib/postgresql-42.5.1.jar && \
+    rm /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
+    rm /opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
+    rm /opt/hadoop/share/hadoop/hdfs/lib/jackson-mapper-asl-1.9.13.jar && \
     chmod -R 755 opt
 
 RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
@@ -57,7 +57,6 @@ RUN mkdir -p /opt/hive-metastore-metrics/metrics \
 FROM eclipse-temurin:17-jre-noble
 
 ENV HIVE_USER_NAME=metastore
-ENV HADOOP_VERSION=3.3.6
 ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
 ENV HIVE_HOME=/opt/hive-metastore
 ENV HADOOP_HOME=/opt/hadoop
@@ -73,6 +72,8 @@ RUN groupadd ${HIVE_USER_NAME} --gid 10002 && \
     useradd ${HIVE_USER_NAME} --uid 10002 --gid 10002 --create-home && \
     mkdir -p /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME} && \
     chown -R "${HIVE_USER_NAME}:${HIVE_USER_NAME}" /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME}
+
+COPY --from=unpacker /opt /opt
 
 RUN mkdir -p ${TRUST_CERTS_DIR} && \
     chmod 777 ${JAVA_HOME}/lib/security/cacerts && \
