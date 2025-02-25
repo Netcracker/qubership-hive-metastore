@@ -28,7 +28,7 @@ RUN mkdir -p ${HADOOP_DEP} && \
     curl -k -L https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output ${HADOOP_DEP}/jdom2-2.0.6.1.jar && \
     curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar
     
-RUN mkdir -p /opt/postgresql-42.7.4 /opt/jackson-mapper-asl /opt/hive-metastore /opt/hive-metastore/lib 
+RUN mkdir -p /opt/postgresql-42.7.4 /opt/jackson-mapper-asl
 
 RUN mv ${HADOOP_DEP}/hadoop-$HADOOP_VERSION /opt/hadoop && \
     mv ${HADOOP_DEP}/apache-hive-metastore-4.0.1-bin /opt/hive-metastore && \
@@ -37,11 +37,11 @@ RUN mv ${HADOOP_DEP}/hadoop-$HADOOP_VERSION /opt/hadoop && \
     mv ${HADOOP_DEP}/jdom2-2.0.6.1.jar /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
     mv ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar
 
-RUN rm -r /opt/hadoop/share/doc && \
-    rm /opt/hive-metastore/lib/postgresql-42.5.1.jar && \
-    rm /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
-    rm /opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
-    rm /opt/hadoop/share/hadoop/hdfs/lib/jackson-mapper-asl-1.9.13.jar && \
+RUN rm -r opt/hadoop/share/doc && \
+    rm opt/hive-metastore/lib/postgresql-42.5.1.jar && \
+    rm opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
+    rm opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
+    rm opt/hadoop/share/hadoop/hdfs/lib/jackson-mapper-asl-1.9.13.jar && \
     chmod -R 755 opt
 
 RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
