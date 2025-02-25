@@ -18,7 +18,7 @@ It is possible to enable TLS in Patform Hive-Metastore. This process is describe
 
 Qubership Hive-Metastore does not contain a user management mechanism and there is no ability to change the credentials in runtime.
 
-Credentials for the underlying services are managed in the underlying services. You can configure them in Qubership Hive-Metastore parameters. For more details refer to the [Hive Metastore Installation Procedure](/docs/public/installation.md#deployment-using-dppubhelm_deployer).
+Credentials for the underlying services are managed in the underlying services. You can configure them in Qubership Hive-Metastore parameters. For more information, refer to the [Hive Metastore Installation Procedure](/docs/public/installation.md#deployment-using-dppubhelm_deployer).
 
 There is no mechanism in Qubership Hive-Metastore to manage the credentials for Qubership Hive-Metastore. If the external system is used to manage Qubership Hive-Metastore users, the credentials can be managed there. 
 

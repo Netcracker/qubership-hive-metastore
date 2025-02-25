@@ -1,6 +1,6 @@
-This chapter describes the Qubership Hive-Metastore monitoring. Qubership Hive-Metastore monitoring requires Qubership Monitoring installed in the cluster, but you can try to make it work using [Grafana Operator](https://github.com/grafana/grafana-operator) and [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator)
+This chapter describes the Qubership Hive-Metastore monitoring. Qubership Hive-Metastore monitoring requires Qubership Monitoring installed in the cluster. However, you can try to make it work using [Grafana Operator](https://github.com/grafana/grafana-operator) and [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator).
 
-# Table of Contents
+The following sections are covered in this chapter:
 
 * [Grafana Dashboard](#grafana-dashboard)  
 * [Prometheus Rules](#prometheus-rules)
@@ -9,17 +9,13 @@ This chapter describes the Qubership Hive-Metastore monitoring. Qubership Hive-M
 
 This section describes the Qubership Hive-Metastore monitoring dashboard.
 
-![alt text](/docs/internal/images/hive_metastore_dashboard_variables.png "Dashboard Variables")
+![Dashboard Variables](/docs/internal/images/hive_metastore_dashboard_variables.png)
 
-To access the dashboard:
-
-1. Navigate to the Grafana server and log in using the provided credentials.
-2. Select the Hive-Metastore dashboard.
-3. Select the `namespace`. 
-4. Select the operator's `pod`.
-5. Select the time range.
+To access the dashboard, navigate to the Grafana server and log in using the provided credentials. Select the Hive-Metastore dashboard and select the `namespace`. Select the operator's `pod` and select the time range.
 
 ## Metrics
+
+The Metrix covers the following:
 
 * [Hive-Metastore Overview](#hive-metastore-overview)
 * [CPU Usage](#cpu-usage) 
@@ -33,11 +29,11 @@ To access the dashboard:
 
 This section describes the Qubership Hive-Metastore overall state.
 
-![alt text](/docs/internal/images/hive_metastore_overview.png "Hive-Metastore Overview")
+![Hive-Metastore Overview](/docs/internal/images/hive_metastore_overview.png)
 
 #### Hive-Metastore Status
 
-This displays the Qubership Hive-Metastore health status.  
+This section displays the Qubership Hive-Metastore health status.  
 In case of several replicas, the status is "UP" if one of the pods is in the "Running" phase.  
 This approach is based on the fact that only one of the replicas is always active.
 
@@ -66,7 +62,7 @@ The possible values are:
 
 This displays the CPU consumption in Qubership Hive-Metastore pods based on the metrics collected from the docker.
 
-![alt text](/docs/internal/images/hive_metastore_cpu.png "CPU")
+![CPU](/docs/internal/images/hive_metastore_cpu.png)
 
 ### Memory Usage
 
@@ -78,55 +74,57 @@ This displays the memory consumption in Qubership Hive-Metastore pods based on t
 
 This section describes the Qubership Hive-Metastore JVM state.
 
-![alt text](/docs/internal/images/hive_metastore_JVM.png "Hive-Metastore JVM")
+![Hive-Metastore JVM](/docs/internal/images/hive_metastore_JVM.png)
 
 #### JVM Heap Usage
 
-This displays the JVM heap usage by Qubership Hive-Metastore.
+This section displays the JVM heap usage by Qubership Hive-Metastore.
 
 #### Threads
 
-This displays the threads rate per second by Qubership Hive-Metastore.
+This section displays the threads rate per second by Qubership Hive-Metastore.
 
 #### GC Time
 
-This displays the garbage collection time rate per second by Qubership Hive-Metastore.
+This section displays the garbage collection time rate per second by Qubership Hive-Metastore.
 
 ### Disk Space Usage
 
-This displays the disk usage for Qubership Hive-Metastore pods.
+This section displays the disk usage for Qubership Hive-Metastore pods.
 
-![alt text](/docs/internal/images/hive_metastore_space.png "Disk")
+![Disk](/docs/internal/images/hive_metastore_space.png)
 
 ### Network
 
-![alt text](/docs/internal/images/hive-metastore_network.png "Network")
+This section displays the network information.
 
-### Open connection
+![Network](/docs/internal/images/hive-metastore_network.png)
 
-This displays open connections to Qubership Hive-Metastore.
+### Open Connection
+
+This section displays open connections to Qubership Hive-Metastore.
 
 #### Receive/Transmit Bandwidth
 
-This displays the network traffic in bytes per second for the pod.
+This section displays the network traffic in bytes per second for the pod.
 
 #### Rate of Received/Transmitted Packets
 
-This displays the network packets for the pod.
+This section displays the network packets for the pod.
 
 #### Rate of Received/Transmitted Packets Dropped
 
-This displays the dropped packets for the pod.
+This section displays the dropped packets for the pod.
 
 ### Data
 
 This section describes the Qubership Hive-Metastore data state.
 
-![alt text](/docs/internal/images/hive_metastore_data.png "Hive-Metastore data")
+![Hive-Metastore data](/docs/internal/images/hive_metastore_data.png)
 
 #### DB
 
-This displays the count DB of the Qubership Hive-Metastore. 
+This displays the count DB (databases) of the Qubership Hive-Metastore. 
 Count DB - The total number of databases created.
 Delete DB - The number of deleted databases over a period of time. 
 
