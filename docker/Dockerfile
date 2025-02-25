@@ -12,7 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM alpine:latest AS unpacker
+
+ENV HADOOP_DEP=/opt/hadoop/dependencies
+ENV HADOOP_VERSION=3.3.6
+ENV HIVE_VERSION=4.0.1
+
+RUN apk add --no-cache curl
+
+RUN mkdir -p ${HADOOP_DEP} && \
+    curl -k https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz -C ${HADOOP_DEP} && \
+    curl -k https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore-server/$HIVE_VERSION/hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz | tar xvz -C ${HADOOP_DEP} && \
+    curl -k -L https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output ${HADOOP_DEP}/jmx_prometheus_javaagent-1.0.1.jar && \
+    curl -k -L https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar --output ${HADOOP_DEP}/postgresql-42.7.4.jar && \
+    curl -k -L https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output ${HADOOP_DEP}/jdom2-2.0.6.1.jar && \
+    curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar
+
 FROM eclipse-temurin:17-jre-noble
+
+ENV HIVE_USER_NAME=metastore
+ENV HADOOP_DEP=/opt/hadoop/dependencies
+ENV HADOOP_VERSION=3.3.6
+ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
+ENV HIVE_HOME=/opt/hive-metastore
+ENV HADOOP_HOME=/opt/hadoop
 
 USER root
 
@@ -21,33 +44,25 @@ COPY --chmod=0755 docker/entrypoint.sh /opt/entrypoint.sh
 RUN set -ex && \
 apt-get update && apt-get install -y procps postgresql-client --no-install-recommends
 
-ENV HADOOP_HOME=/opt/hadoop
-ENV HIVE_HOME=/opt/hive-metastore
-ENV HIVE_USER_NAME=metastore
-ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
-ENV HADOOP_VERSION=3.3.6
-ENV HIVE_VERSION=4.0.1
-
 RUN groupadd ${HIVE_USER_NAME} --gid 10002 && \
     useradd ${HIVE_USER_NAME} --uid 10002 --gid 10002 --create-home && \
     mkdir -p /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME} && \
     chown -R "${HIVE_USER_NAME}:${HIVE_USER_NAME}" /usr/lib/${HIVE_USER_NAME} /data/${HIVE_USER_NAME}
 
-RUN curl -k https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz -C opt && \
-    mv opt/hadoop-$HADOOP_VERSION opt/hadoop && \
-    rm -r opt/hadoop/share/doc && \
-    curl -k https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore-server/$HIVE_VERSION/hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz | tar xvz -C opt && \
-    mv opt/apache-hive-metastore-4.0.1-bin opt/hive-metastore && \
-    curl -k -L https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
+RUN mkdir -p /opt/postgresql-42.7.4 /opt/jackson-mapper-asl
+
+COPY --from=unpacker ${HADOOP_DEP}/hadoop-$HADOOP_VERSION opt/hadoop
+COPY --from=unpacker ${HADOOP_DEP}/apache-hive-metastore-4.0.1-bin opt/hive-metastore
+COPY --from=unpacker ${HADOOP_DEP}/jmx_prometheus_javaagent-1.0.1.jar /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar
+COPY --from=unpacker ${HADOOP_DEP}/postgresql-42.7.4.jar /opt/postgresql-42.7.4/postgresql-42.7.4.jar
+COPY --from=unpacker ${HADOOP_DEP}/jdom2-2.0.6.1.jar /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar
+COPY --from=unpacker ${HADOOP_DEP}/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar
+
+RUN rm -r opt/hadoop/share/doc && \
     rm opt/hive-metastore/lib/postgresql-42.5.1.jar && \
-    mkdir opt/postgresql-42.7.4 && \
-    curl -k -L https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar --output opt/postgresql-42.7.4/postgresql-42.7.4.jar && \
     rm opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
-    curl -k -L https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
     rm opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
     rm opt/hadoop/share/hadoop/hdfs/lib/jackson-mapper-asl-1.9.13.jar && \
-    mkdir opt/jackson-mapper-asl && \
-    curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar && \
     chmod -R 755 opt
 
 RUN ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
