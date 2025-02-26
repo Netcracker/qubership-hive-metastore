@@ -55,7 +55,12 @@ USER root
 COPY --chmod=0755 docker/entrypoint.sh /opt/entrypoint.sh
 
 RUN set -ex && \
-apt-get update && apt-get install -y procps postgresql-client --no-install-recommends
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        procps \
+        postgresql-client \
+        openssl \
+        libssl3t64 
 
 RUN groupadd ${HIVE_USER_NAME} --gid 10002 && \
     useradd ${HIVE_USER_NAME} --uid 10002 --gid 10002 --create-home && \
