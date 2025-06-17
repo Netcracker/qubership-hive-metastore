@@ -148,7 +148,7 @@ Selector labels for cloud release
 */}}
 {{- define "selector_labels" -}}
 app.kubernetes.io/instance: {{ cat .Release.Name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-app.kubernetes.io/name: hive-metastore
+app.kubernetes.io/name: {{ include "hive-metastore.name" . }}
 {{- end }}
 
 {{/*
@@ -167,7 +167,7 @@ Deployment and service only labels for cloud release
 */}}
 {{- define "deployment_and_service_only_labels" -}}
 name: {{ include "hive-metastore.name" . }}
-app.kubernetes.io/name: hive-metastore
+app.kubernetes.io/name: {{ include "hive-metastore.name" . }}
 {{- end }}
 
 {{/*
