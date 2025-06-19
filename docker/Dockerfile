@@ -29,6 +29,7 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     mkdir -p /opt/jackson-mapper-asl && \
     curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar && \
     rm -r opt/hadoop/share/doc && \
+    rm -r opt/hadoop/share/hadoop/yarn && \
     rm opt/hive-metastore/lib/postgresql-42.5.1.jar && \
     rm opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
     rm opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
