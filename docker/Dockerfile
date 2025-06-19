@@ -16,6 +16,7 @@ FROM alpine:latest AS unpacker
 
 ENV HADOOP_VERSION=3.3.6
 ENV HIVE_VERSION=4.0.1
+ENV HADOOP_YARN_HOME=/opt/hadoop
 
 RUN apk add --no-cache curl
 
