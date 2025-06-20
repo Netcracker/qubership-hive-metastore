@@ -30,9 +30,13 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     curl -k -L $MAVEN_REPO/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
     mkdir -p /opt/jackson-mapper-asl && \
     curl -k -L $MAVEN_REPO/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar && \
+    mkdir -p /opt/netty-handler-4.1.118.Final && \
     curl -k -L $MAVEN_REPO/io/netty/netty-handler/4.1.118.Final/netty-handler-4.1.118.Final.jar --output /opt/netty-handler-4.1.118.Final/netty-handler-4.1.118.Final.jar && \
+    mkdir -p /opt/aircompressor-0.27 && \
     curl -k -L $MAVEN_REPO/io/airlift/aircompressor/0.27/aircompressor-0.27.jar --output /opt/aircompressor-0.27/aircompressor-0.27.jar && \
+    mkdir -p /opt/jetty-server-9.4.57.v20241219 && \
     curl -k -L $MAVEN_REPO/org/eclipse/jetty/jetty-server/9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar --output /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar && \
+    mkdir -p /opt/netty-codec-http2-4.1.100.Final && \
     curl -k -L $MAVEN_REPO/io/netty/netty-codec-http2/4.1.100.Final/netty-codec-http2-4.1.100.Final.jar --output /opt/netty-codec-http2-4.1.100.Final/netty-codec-http2-4.1.100.Final.jar && \
     rm -r opt/hadoop/share/doc && \
     rm -r opt/hadoop/share/hadoop/yarn && \
