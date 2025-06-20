@@ -24,8 +24,8 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     curl -k https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz --strip-components=1 -C /opt/hadoop && \
     curl -k https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore-server/$HIVE_VERSION/hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
     curl -k -L https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
-    mkdir -p /opt/postgresql-42.7.4 && \
-    curl -k -L https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar --output /opt/postgresql-42.7.4/postgresql-42.7.4.jar && \
+    mkdir -p /opt/postgresql-42.7.7 && \
+    curl -k -L https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.7/postgresql-42.7.7.jar --output /opt/postgresql-42.7.7/postgresql-42.7.7.jar && \
     curl -k -L https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
     mkdir -p /opt/jackson-mapper-asl && \
     curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar && \
@@ -38,8 +38,8 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     chmod -R 755 opt && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk* /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/postgresql-42.7.4/postgresql-42.7.4.jar /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/postgresql-42.7.4/postgresql-42.7.4.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hive-metastore/lib/ && \
     ln -s /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/hadoop/share/hadoop/hdfs/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
