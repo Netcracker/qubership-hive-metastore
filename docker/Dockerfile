@@ -16,28 +16,49 @@ FROM alpine:latest AS unpacker
 
 ENV HADOOP_VERSION=3.3.6
 ENV HIVE_VERSION=4.0.1
+ENV MAVEN_REPO=https://repo1.maven.org/maven2
+
 
 RUN apk add --no-cache curl
 
 RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     curl -k https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz --strip-components=1 -C /opt/hadoop && \
-    curl -k https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore-server/$HIVE_VERSION/hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
-    curl -k -L https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
-    mkdir -p /opt/postgresql-42.7.4 && \
-    curl -k -L https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar --output /opt/postgresql-42.7.4/postgresql-42.7.4.jar && \
-    curl -k -L https://repo1.maven.org/maven2/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
+    curl -k $MAVEN_REPO/org/apache/hive/hive-standalone-metastore-server/$HIVE_VERSION/hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
+    curl -k -L $MAVEN_REPO/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
+    mkdir -p /opt/postgresql-42.7.7 && \
+    curl -k -L $MAVEN_REPO/org/postgresql/postgresql/42.7.7/postgresql-42.7.7.jar --output /opt/postgresql-42.7.7/postgresql-42.7.7.jar && \
+    curl -k -L $MAVEN_REPO/org/jdom/jdom2/2.0.6.1/jdom2-2.0.6.1.jar --output /opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.1.jar && \
     mkdir -p /opt/jackson-mapper-asl && \
-    curl -k -L https://repo1.maven.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar && \
+    curl -k -L $MAVEN_REPO/org/codehaus/jackson/jackson-mapper-asl/1.9.13-cloudera.3/jackson-mapper-asl-1.9.13-cloudera.3.jar --output /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar && \
+    mkdir -p /opt/netty-handler-4.1.118.Final && \
+    curl -k -L $MAVEN_REPO/io/netty/netty-handler/4.1.118.Final/netty-handler-4.1.118.Final.jar --output /opt/netty-handler-4.1.118.Final/netty-handler-4.1.118.Final.jar && \
+    mkdir -p /opt/aircompressor-0.27 && \
+    curl -k -L $MAVEN_REPO/io/airlift/aircompressor/0.27/aircompressor-0.27.jar --output /opt/aircompressor-0.27/aircompressor-0.27.jar && \
+    mkdir -p /opt/jetty-server-9.4.57.v20241219 && \
+    curl -k -L $MAVEN_REPO/org/eclipse/jetty/jetty-server/9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar --output /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar && \
+    mkdir -p /opt/netty-codec-http2-4.1.100.Final && \
+    curl -k -L $MAVEN_REPO/io/netty/netty-codec-http2/4.1.100.Final/netty-codec-http2-4.1.100.Final.jar --output /opt/netty-codec-http2-4.1.100.Final/netty-codec-http2-4.1.100.Final.jar && \
     rm -r opt/hadoop/share/doc && \
+    rm -r opt/hadoop/share/hadoop/yarn && \
     rm opt/hive-metastore/lib/postgresql-42.5.1.jar && \
+    rm opt/hive-metastore/lib/netty-handler-4.1.94.Final.jar && \
+    rm opt/hive-metastore/lib/aircompressor-0.21.jar && \
+    rm opt/hadoop/share/hadoop/common/lib/jetty-server-9.4.51.v20230217.jar && \
+    rm opt/hive-metastore/lib/jetty-server-9.4.45.v20220203.jar && \
+    rm opt/hadoop/share/hadoop/common/lib/netty-codec-http2-4.1.89.Final.jar && \
     rm opt/hadoop/share/hadoop/tools/lib/jdom2-2.0.6.jar && \
     rm opt/hadoop/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar && \
     rm opt/hadoop/share/hadoop/hdfs/lib/jackson-mapper-asl-1.9.13.jar && \
     chmod -R 755 opt && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk* /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/postgresql-42.7.4/postgresql-42.7.4.jar /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/postgresql-42.7.4/postgresql-42.7.4.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/netty-handler-4.1.118.Final/netty-handler-4.1.118.Final.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/aircompressor-0.27/aircompressor-0.27.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/netty-codec-http2-4.1.100.Final/netty-codec-http2-4.1.100.Final.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/hadoop/share/hadoop/hdfs/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
@@ -49,6 +70,7 @@ ENV HIVE_USER_NAME=metastore
 ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
 ENV HIVE_HOME=/opt/hive-metastore
 ENV HADOOP_HOME=/opt/hadoop
+ENV HADOOP_YARN_HOME=/opt/hadoop
 
 USER root
 
