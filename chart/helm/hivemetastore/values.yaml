@@ -23,7 +23,7 @@ image:
   tag: main
 
 imagePullSecrets: []
-nameOverride: ""
+nameOverride: "hive-metastore"
 fullnameOverride: "hive-metastore"
 
 replicaCount: 1
