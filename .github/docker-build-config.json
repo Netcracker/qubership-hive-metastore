@@ -1,0 +1,17 @@
+{
+  "components": [
+    
+    {
+      "name": "qubership-hive-metastore-transfer",
+      "file": "docker-transfer/Dockerfile",
+      "context": "."
+    },
+    
+    {
+      "name": "qubership-hive-metastore",
+      "file": "docker/Dockerfile",
+      "context": "."
+    }
+  ],
+  "platforms": "linux/amd64,linux/arm64"
+}
