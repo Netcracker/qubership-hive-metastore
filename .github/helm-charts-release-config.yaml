@@ -1,0 +1,9 @@
+---
+
+charts:
+  - name: qubership-hive-metastore
+    chart_file: chart/helm/hivemetastore/Chart.yaml
+    values_file: chart/helm/hivemetastore/release-images.yaml
+    image:
+      - ghcr.io/netcracker/qubership-hive-metastore:${release}
+      - ghcr.io/netcracker/qubership-hive-metastore-transfer:${release}
