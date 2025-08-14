@@ -22,4 +22,4 @@ if [[ "$(ls ${TRUST_CERTS_DIR})" ]]; then
 fi
 set -e
 
-/opt/hive-metastore/bin/start-metastore -p "${HIVE_SERVICE_PORT:-9083}"
+/opt/hive/bin/start-metastore -p "${HIVE_SERVICE_PORT:-9083}"

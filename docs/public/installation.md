@@ -246,7 +246,7 @@ You can use two options to enable HTTPS/TLS.
 secretMounts:
   - name: sert
     secretName: hive-metastore-certificate
-    path: /opt/hive-metastore/certs/
+    path: /opt/hive/certs/
 tls:
   enabled: true
   serverSideTls: true
@@ -268,7 +268,7 @@ Pass the following parameters to the chart:
 secretMounts:
   - name: sert
     secretName: hive-metastore-certificate
-    path: /opt/hive-metastore/certs/
+    path: /opt/hive/certs/
 tls:
   enabled: true
   serverSideTls: true
@@ -295,7 +295,7 @@ In order to secure connections from Hive Metastore using TLS/SSL:
 
 There are three options for adding certificates to Hive Metastore.
 
-**Note**: The certificate should be mounted to `opt/hive-metastore/trustcerts`. All certificates from that directory are added to Java default truststore - cacerts.
+**Note**: The certificate should be mounted to `opt/hive/trustcerts`. All certificates from that directory are added to Java default truststore - cacerts.
 
 1. Enable certificate generation to use cert-manager certificates.
 
@@ -315,7 +315,7 @@ tls:
 ```
 
 2. Add certificates using `extraSecrets` deployment parameter. In this case, the added secret should be mounted into the coordinator and the workers pod.  
-   Mounting details are set using the `extraVolumes` and `extraVolumeMounts` parameters. The Certificates should be mounted to `opt/hive-metastore/trustcerts`.
+   Mounting details are set using the `extraVolumes` and `extraVolumeMounts` parameters. The Certificates should be mounted to `opt/hive/trustcerts`.
 ```yaml
 extraSecrets:
    mysslcert: # secret name
@@ -335,7 +335,7 @@ extraVolumes:
 
 extraVolumeMounts:
   - name: tls-custom-cert
-    mountPath: /opt/hive-metastore/trustcerts/mysslcert.crt
+    mountPath: /opt/hive/trustcerts/mysslcert.crt
     subPath: mysslcert.crt
     readOnly: true
 ```
@@ -351,7 +351,7 @@ extraVolumes:
 
 extraVolumeMounts:
   - name: defaultcert
-    mountPath: /opt/hive-metastore/trustcerts/ca-bundle.crt
+    mountPath: /opt/hive/trustcerts/ca-bundle.crt
     subPath: ca-bundle.crt
     readOnly: true
 ```

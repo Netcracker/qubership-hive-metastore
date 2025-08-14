@@ -120,11 +120,11 @@ extraVolumeMounts: []
 #    subPath: mysslcert.crt
 #    readOnly: true
 #  - name: tls-custom-cert
-#    mountPath: /opt/hive-metastore/trustcerts/ca.crt
+#    mountPath: /opt/hive/trustcerts/ca.crt
 #    subPath: mysslcert.crt
 #    readOnly: true
 #  - name: tls-s3-cert
-#    mountPath: /opt/hive-metastore/trustcerts/s3cert.crt
+#    mountPath: /opt/hive/trustcerts/s3cert.crt
 #    subPath: s3cert.crt
 #    readOnly: true
 
@@ -166,11 +166,11 @@ affinity: {}
 secretMounts: []
 #  - name: metastore-cm-cert
 #    secretName: hive-metastore-cm-cert
-#    path: /opt/hive-metastore/trustcerts/ca.crt
+#    path: /opt/hive/trustcerts/ca.crt
 #    subPath: ca.crt
 #  - name: sert
 #    secretName: hive-metastore-cm-cert
-#    path: /opt/hive-metastore/certs/
+#    path: /opt/hive/certs/
 #  - name: sample-secret
 #    secretName: sample-secret
 #    path: /secrets/sample.json
@@ -282,7 +282,7 @@ metastoreConfigsecret:
       </property>
       <property>
         <name>metastore.keystore.path</name>
-        <value>/opt/hive-metastore/certs/keystore.jks</value>
+        <value>/opt/hive/certs/keystore.jks</value>
       </property>
       <property>
         <name>metastore.keystore.password</name>

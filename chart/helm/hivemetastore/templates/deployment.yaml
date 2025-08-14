@@ -89,13 +89,13 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: log4j2-properties
-              mountPath: /opt/hive-metastore/conf/metastore-log4j2.properties
+              mountPath: /opt/hive/conf/metastore-log4j2.properties
               subPath: log4j2.properties
             - name: metastore-cfg-vol
-              mountPath: /opt/hive-metastore/conf/metastore-site.xml
+              mountPath: /opt/hive/conf/metastore-site.xml
               subPath: metastore-site.xml
             - name: metastore-cfg-secret
-              mountPath: /opt/hive-metastore/conf/hivemetastore-site.xml
+              mountPath: /opt/hive/conf/hivemetastore-site.xml
               subPath: hivemetastore-site.xml
             - name: metastore-cfg-secret
               mountPath: /opt/hadoop/etc/hadoop/core-site.xml
@@ -106,7 +106,7 @@ spec:
               subPath: {{ .subPath }}
             {{- end }}
             - name: jmx-cfg-vol
-              mountPath: /opt/hive-metastore/conf/jmx-exporter-config.yaml
+              mountPath: /opt/hive/conf/jmx-exporter-config.yaml
               subPath: jmx-exporter-config.yaml
             {{- if .Values.extraVolumeMounts }}
               {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 12 }}
@@ -117,7 +117,7 @@ spec:
                 - /bin/sh
                 - -c
                 - |-
-                  /opt/hive-metastore/bin/schematool  -verbose -info -dbType postgres -userName $PG_USERNAME -passWord $PG_PASSWORD -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName $HIVE_USERNAME -passWord $HIVE_PASSWORD
+                  /opt/hive/bin/schematool  -verbose -info -dbType postgres -userName $PG_USERNAME -passWord $PG_PASSWORD -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName $HIVE_USERNAME -passWord $HIVE_PASSWORD
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 15 }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 30 }}

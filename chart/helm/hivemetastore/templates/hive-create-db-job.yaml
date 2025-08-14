@@ -161,7 +161,7 @@ spec:
 
             echo -e " \n----- Updating Hive Schema-----"
 
-            HIVE_UPDATE_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -upgradeSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            HIVE_UPDATE_ERROR=$(/opt/hive/bin/schematool -verbose -upgradeSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
@@ -176,7 +176,7 @@ spec:
 
             echo -e " \n-----Initializing Hive Schema-----"
 
-            HIVE_INIT_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -initSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            HIVE_INIT_ERROR=$(/opt/hive/bin/schematool -verbose -initSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
@@ -196,7 +196,7 @@ spec:
 
             echo -e " \n-----Validating Hive Schema-----"
 
-            HIVE_VALID_ERROR=$(/opt/hive-metastore/bin/schematool  -verbose -validate -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1)
+            HIVE_VALID_ERROR=$(/opt/hive/bin/schematool  -verbose -validate -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1)
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
@@ -205,7 +205,7 @@ spec:
               if [[ "$HIVE_VALID_ERROR" =~ .*"Failed in schema version validation".* ]]
               then 
                 echo -e " \n-----Upgrading Hive Schema-----"
-                HIVE_UPGRADE_SCHEMA=$(/opt/hive-metastore/bin/schematool  -verbose -upgradeSchema -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1 > /dev/null)
+                HIVE_UPGRADE_SCHEMA=$(/opt/hive/bin/schematool  -verbose -upgradeSchema -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1 > /dev/null)
                 EXIT_CODE=$?
                 if [ $EXIT_CODE -ne 0 ]
                 then
