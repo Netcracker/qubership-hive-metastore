@@ -52,7 +52,7 @@ securityContext:
     type: RuntimeDefault
   allowPrivilegeEscalation: false
   runAsNonRoot: true
-  runAsUser: 10002
+  runAsUser: 1000
 
 monitoring:
   enabled: true
