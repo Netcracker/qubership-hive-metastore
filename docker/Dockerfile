@@ -21,7 +21,7 @@ ENV MAVEN_REPO=https://repo1.maven.org/maven2
 
 RUN apk add --no-cache curl
 
-RUN mkdir -p /opt/hadoop /opt/hive
+RUN mkdir -p /opt/hadoop /opt/hive && \
 #     curl -k https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | tar xvz --strip-components=1 -C /opt/hadoop && \
 #     curl -k $MAVEN_REPO/org/apache/hive/hive-standalone-metastore-server/$HIVE_VERSION/hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive && \
 #     curl -k -L $MAVEN_REPO/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive/lib/jmx_prometheus_javaagent-1.0.1.jar && \
@@ -61,8 +61,8 @@ RUN mkdir -p /opt/hadoop /opt/hive
 #     ln -s /opt/netty-codec-http2-4.1.100.Final/netty-codec-http2-4.1.100.Final.jar /opt/hadoop/share/hadoop/common/lib/ && \
 #     ln -s /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/hadoop/share/hadoop/common/lib/ && \
 #     ln -s /opt/jackson-mapper-asl/jackson-mapper-asl-1.9.13-cloudera.3.jar /opt/hadoop/share/hadoop/hdfs/lib/ && \
-#     mkdir -p /opt/hive-metrics/metrics \
-#     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive/bin/ext/metastore.sh
+    mkdir -p /opt/hive-metrics/metrics \
+    && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive/bin/ext/metastore.sh
 
 FROM apache/hive:standalone-metastore-4.1.0
 ENV TRUST_CERTS_DIR=/opt/hive/trustcerts
@@ -72,13 +72,13 @@ USER root
 
 COPY --chmod=0755 docker/entrypoint.sh /opt/entrypoint.sh
 
-# RUN set -ex && \
-#     apt-get update && \
-#     apt-get install -y --no-install-recommends \
-#         procps \
-#         postgresql-client \
-#         openssl \
-#         libssl3t64
+RUN set -ex && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        procps \
+        postgresql-client \
+        openssl \
+        libssl3t64
 
 
 COPY --from=unpacker /opt /opt
