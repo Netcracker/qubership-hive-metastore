@@ -34,7 +34,7 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     rm opt/hadoop/share/hadoop/common/lib/jetty-server-9.4.53.v20231009.jar && \
     chmod -R 755 opt && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/aws-java-sdk* /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/hadoop/share/hadoop/tools/lib/bundle* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hive-metastore/lib/ && \
     ln -s /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar /opt/hadoop/share/hadoop/common/lib/ && \
