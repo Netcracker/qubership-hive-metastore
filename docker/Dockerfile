@@ -32,12 +32,14 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     rm -r opt/hadoop/share/doc && \
     rm -r opt/hadoop/share/hadoop/yarn && \
     rm opt/hadoop/share/hadoop/common/lib/jetty-server-9.4.53.v20231009.jar && \
+    rm opt/hadoop/share/hadoop/hdfs/lib/jetty-server-9.4.53.v20231009.jar && \
     chmod -R 755 opt && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/bundle* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hive-metastore/lib/ && \
     ln -s /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/jetty-server-9.4.57.v20241219/jetty-server-9.4.57.v20241219.jar /opt/hadoop/share/hadoop/hdfs/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
 
