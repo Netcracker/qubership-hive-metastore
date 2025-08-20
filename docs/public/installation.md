@@ -469,7 +469,7 @@ env:
     value: '/opt/apache-hive-metastore-4.0.1-bin/certs/'
 ```
 
-To ignore certificate validation for S3, the following properties should be added:
+It is impossible to ignore certificate validation in hive 4.1.0 and above since it uses AWS java SDK v2. However in previous versions or if custom image with AWS java SDK v1 is used, it is possible to ignore certificate validation by setting the following properties:
 
 ```yaml
 env:
