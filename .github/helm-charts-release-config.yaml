@@ -1,9 +1,12 @@
 ---
 
 charts:
-  - name: qubership-hive-metastore
-    chart_file: chart/helm/hivemetastore/Chart.yaml
-    values_file: chart/helm/hivemetastore/release-images.yaml
+  - name: qubership-zookeeper
+    chart_file: charts/helm/zookeeper-service/Chart.yaml
+    values_file: charts/helm/zookeeper-service/values.yaml
     image:
-      - ghcr.io/netcracker/qubership-hive-metastore:${release}
-      - ghcr.io/netcracker/qubership-hive-metastore-transfer:${release}
+      - ghcr.io/netcracker/qubership-zookeeper-operator:${release}
+      - ghcr.io/netcracker/qubership-docker-zookeeper:${release}-${ZOO_VERSION}
+      - ghcr.io/netcracker/qubership-zookeeper-monitoring:${release}
+      - ghcr.io/netcracker/qubership-zookeeper-backup-daemon:${release}
+      - ghcr.io/netcracker/qubership-zookeeper-integration-tests:${release}
