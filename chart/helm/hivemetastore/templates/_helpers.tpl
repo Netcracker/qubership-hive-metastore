@@ -203,5 +203,5 @@ app.kubernetes.io/processed-by-operator: cert-manager
 app.kubernetes.io/component: backend
 {{- end }}
 {{- define "cloud_release_only_label_managed_by" -}}
-app.kubernetes.io/managed-by: helm
+app.kubernetes.io/managed-by: Helm
 {{- end }}
