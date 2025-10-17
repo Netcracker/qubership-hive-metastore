@@ -156,7 +156,6 @@ Deployment only labels for cloud release
 */}}
 {{- define "deployment_only_labels" -}}
 app.kubernetes.io/instance: {{ cat .Release.Name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-app.kubernetes.io/component: hivemetastore
 app.kubernetes.io/version: {{ splitList ":" ( include "hivemetastore_image" . ) | last }}
 app.kubernetes.io/technology: java-others
 {{- end }}

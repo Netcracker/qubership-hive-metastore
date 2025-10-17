@@ -42,7 +42,7 @@ spec:
         {{- include "all_objects_labels" . | nindent 8 }}
         {{- include "deployment_and_service_only_labels" . | nindent 8 }}
         {{- include "deployment_only_labels" . | nindent 8 }}
-        {{- include "qubership_release_only_labels" . | nindent 4 }}
+        {{- include "qubership_release_only_labels" . | nindent 8 }}
     spec:
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
