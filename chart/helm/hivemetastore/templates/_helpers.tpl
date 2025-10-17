@@ -173,7 +173,7 @@ app.kubernetes.io/name: {{ include "hive-metastore.name" . }}
 All object labels for cloud release
 */}}
 {{- define "all_objects_labels" -}}
-app.kubernetes.io/part-of: hivemetastore
+app.kubernetes.io/part-of: hive-metastore
 {{- end }}
 
 {{/*
@@ -197,9 +197,11 @@ Processed by cert-manager label for cloud release
 app.kubernetes.io/processed-by-operator: cert-manager
 {{- end }}
 {{/*
-  only labels for Qubership Release
+  only labels for Cloud Release
 */}}
-{{- define "qubership_release_only_labels" -}}
+{{- define "cloud_release_only_label_component" -}}
 app.kubernetes.io/component: backend
+{{- end }}
+{{- define "cloud_release_only_label_managed_by" -}}
 app.kubernetes.io/managed-by: helm
 {{- end }}
