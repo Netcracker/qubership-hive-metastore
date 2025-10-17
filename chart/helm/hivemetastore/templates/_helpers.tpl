@@ -197,3 +197,10 @@ Processed by cert-manager label for cloud release
 {{- define "cert_manager_label" -}}
 app.kubernetes.io/processed-by-operator: cert-manager
 {{- end }}
+{{/*
+  only labels for Qubership Release
+*/}}
+{{- define "qubership_release_only_labels" -}}
+app.kubernetes.io/component: backend
+app.kubernetes.io/managed-by: helm
+{{- end }}
