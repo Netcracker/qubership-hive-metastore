@@ -202,6 +202,3 @@ app.kubernetes.io/processed-by-operator: cert-manager
 {{- define "qubership_release_only_label_component" -}}
 app.kubernetes.io/component: backend
 {{- end }}
-{{- define "qubership_release_only_label_managed_by" -}}
-app.kubernetes.io/managed-by: Helm
-{{- end }}
