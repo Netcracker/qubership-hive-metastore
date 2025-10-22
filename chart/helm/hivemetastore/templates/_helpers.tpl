@@ -144,7 +144,7 @@ Hive Password
 {{- end -}}
 
 {{/*
-Selector labels for cloud release
+Selector labels for qubership release
 */}}
 {{- define "selector_labels" -}}
 app.kubernetes.io/instance: {{ cat .Release.Name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
@@ -152,18 +152,18 @@ app.kubernetes.io/name: {{ include "hive-metastore.name" . }}
 {{- end }}
 
 {{/*
-Deployment only labels for cloud release
+Deployment only labels for qubership release
 */}}
 {{- define "deployment_only_labels" -}}
 app.kubernetes.io/instance: {{ cat .Release.Name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
-app.kubernetes.io/component: hivemetastore
 app.kubernetes.io/version: {{ splitList ":" ( include "hivemetastore_image" . ) | last }}
+app.kubernetes.io/component: {{ default "hive-metastore" .Values.componentLabel }}
 app.kubernetes.io/technology: java-others
 {{- end }}
 
 
 {{/*
-Deployment and service only labels for cloud release
+Deployment and service only labels for qubership release
 */}}
 {{- define "deployment_and_service_only_labels" -}}
 name: {{ include "hive-metastore.name" . }}
@@ -171,29 +171,30 @@ app.kubernetes.io/name: {{ include "hive-metastore.name" . }}
 {{- end }}
 
 {{/*
-All object labels for cloud release
+All object labels for qubership release
 */}}
 {{- define "all_objects_labels" -}}
-app.kubernetes.io/part-of: hivemetastore
+app.kubernetes.io/part-of: hive-metastore
 {{- end }}
 
 {{/*
-Processed by grafana operator label for cloud release
+Processed by grafana operator label for qubership release
 */}}
 {{- define "grafana_operator_label" -}}
 app.kubernetes.io/processed-by-operator: grafana-operator
 {{- end }}
 
 {{/*
-Processed by prometheus operator label for cloud release
+Processed by prometheus operator label for qubership release
 */}}
 {{- define "prometheus_operator_label" -}}
 app.kubernetes.io/processed-by-operator: prometheus-operator
 {{- end }}
 
 {{/*
-Processed by cert-manager label for cloud release
+Processed by cert-manager label for qubership release
 */}}
 {{- define "cert_manager_label" -}}
 app.kubernetes.io/processed-by-operator: cert-manager
 {{- end }}
+
