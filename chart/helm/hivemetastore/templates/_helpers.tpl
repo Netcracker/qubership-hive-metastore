@@ -157,6 +157,7 @@ Deployment only labels for qubership release
 {{- define "deployment_only_labels" -}}
 app.kubernetes.io/instance: {{ cat .Release.Name "-" .Release.Namespace | nospace | trunc 63 | trimSuffix "-" }}
 app.kubernetes.io/version: {{ splitList ":" ( include "hivemetastore_image" . ) | last }}
+app.kubernetes.io/component: {{ default "hive-metastore" .Values.componentLabel }}
 app.kubernetes.io/technology: java-others
 {{- end }}
 
@@ -196,9 +197,4 @@ Processed by cert-manager label for qubership release
 {{- define "cert_manager_label" -}}
 app.kubernetes.io/processed-by-operator: cert-manager
 {{- end }}
-{{/*
-  only labels for qubership Release
-*/}}
-{{- define "qubership_release_only_label_component" -}}
-app.kubernetes.io/component: {{ default "hive-metastore" .Values.componentLabel }}
-{{- end }}
+

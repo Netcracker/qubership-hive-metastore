@@ -23,7 +23,6 @@ metadata:
     {{- include "all_objects_labels" . | nindent 4 }}
     {{- include "deployment_and_service_only_labels" . | nindent 4 }}
     {{- include "deployment_only_labels" . | nindent 4 }}
-    {{- include "qubership_release_only_label_component" . | nindent 4 }}
     {{- with .Values.labels }}
     {{ toYaml . | indent 4 }}
     {{- end }}
