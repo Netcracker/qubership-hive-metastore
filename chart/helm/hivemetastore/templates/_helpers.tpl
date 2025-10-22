@@ -200,5 +200,5 @@ app.kubernetes.io/processed-by-operator: cert-manager
   only labels for qubership Release
 */}}
 {{- define "qubership_release_only_label_component" -}}
-app.kubernetes.io/component:  '{{ .Values.componentLabel }}'
+app.kubernetes.io/component: {{ default "hive-metastore" .Values.componentLabel }}
 {{- end }}
