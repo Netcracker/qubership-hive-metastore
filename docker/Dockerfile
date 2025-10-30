@@ -14,7 +14,7 @@
 
 FROM alpine:latest AS unpacker
 
-ENV HADOOP_VERSION=3.4.1
+ENV HADOOP_VERSION=3.4.2
 ENV HIVE_VERSION=4.1.0
 ENV MAVEN_REPO=https://repo1.maven.org/maven2
 
