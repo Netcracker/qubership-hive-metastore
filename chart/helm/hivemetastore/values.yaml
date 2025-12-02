@@ -432,3 +432,4 @@ log4j2Properties: |
   rootLogger.level = ${sys:metastore.log.level}
   rootLogger.appenderRefs = root
   rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}
+labels: {}
