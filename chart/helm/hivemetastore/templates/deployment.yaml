@@ -20,11 +20,11 @@ metadata:
   name: {{ include "hive-metastore.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "all_objects_labels" . | nindent 4 }}
+    {{- include "all_objects_labels" (dict "context" . "includeSessionId" true) | nindent 4 }} 
     {{- include "deployment_and_service_only_labels" . | nindent 4 }}
     {{- include "deployment_only_labels" . | nindent 4 }}
     {{- with .Values.labels }}
-    {{ tpl (toYaml .) $ | trimSuffix "\n" }}
+    {{ toYaml . | indent 4 }}
     {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -38,7 +38,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "all_objects_labels" . | nindent 8 }}
+        {{- include "all_objects_labels" (dict "context" . "includeSessionId" false) | nindent 8 }}
         {{- include "deployment_and_service_only_labels" . | nindent 8 }}
         {{- include "deployment_only_labels" . | nindent 8 }}
     spec:
