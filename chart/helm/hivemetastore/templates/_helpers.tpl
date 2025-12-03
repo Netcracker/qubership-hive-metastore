@@ -172,8 +172,18 @@ app.kubernetes.io/name: {{ include "hive-metastore.name" . }}
 
 {{/*
 All object labels for qubership release
+These lables will not be added in template section in Deployment
+There is an other function all_template_specific_labels for template section
 */}}
 {{- define "all_objects_labels" -}}
+app.kubernetes.io/part-of: hive-metastore
+{{- end }}
+
+{{/*
+Lables for template specific
+These labels are only for template section in Deployment
+*/}}
+{{- define "all_template_specific_labels" -}}
 app.kubernetes.io/part-of: hive-metastore
 {{- end }}
 
