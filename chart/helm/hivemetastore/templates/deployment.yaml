@@ -38,9 +38,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "all_objects_labels" . | 
-            regexReplaceAll "(?m)^.*sessionId:.*$" "" | 
-            nindent 8 }}
+        {{- include "all_template_specific_labels" . | nindent 8 }}
         {{- include "deployment_and_service_only_labels" . | nindent 8 }}
         {{- include "deployment_only_labels" . | nindent 8 }}
     spec:
