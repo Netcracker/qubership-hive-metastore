@@ -1,2 +1,2 @@
-qubershipHiveMetastoreImage: ghcr.io/netcracker/qubership-hive-metastore:main
-qubershipHiveMetastoreTransferImage: ghcr.io/netcracker/qubership-hive-metastore-transfer:main
+qubershipHiveMetastoreImage: ghcr.io/netcracker/qubership-hive-metastore:3.3.5
+qubershipHiveMetastoreTransferImage: ghcr.io/netcracker/qubership-hive-metastore-transfer:3.3.5
