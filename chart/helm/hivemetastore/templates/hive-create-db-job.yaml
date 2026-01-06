@@ -179,24 +179,33 @@ spec:
 
             {{ else }}
 
-            echo -e " \n-----Initializing Hive Schema-----"
+            echo -e " \n-----Initializing Hive Schema (Debug Mode)-----"
 
-            HIVE_INIT_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -initSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+
+            /opt/hive-metastore/bin/schematool -verbose -initSchema \
+              -dbType postgres \
+              -userName {{ include "postgres.hive.user" . }} \
+              -passWord {{ include "postgres.hive.password" . }} \
+              -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' \
+              -driver {{ .Values.postgres.driver }} > /tmp/schematool_debug.log 2>&1
+
             EXIT_CODE=$?
-            if [ $EXIT_CODE -ne 0 ]
-            then
-              if [[ "$HIVE_INIT_ERROR" =~ .*"already exists".* ]]
-              then
+
+            HIVE_INIT_ERROR=$(cat /tmp/schematool_debug.log)
+
+            if [ $EXIT_CODE -ne 0 ]; then
+              if [[ "$HIVE_INIT_ERROR" =~ .*"already exists".* ]]; then
                 echo "Hive schema is already initialized."
               else
-                echo "ERROR: Hive schema init failed."
+                echo "------------------ FULL DEBUG LOG START ------------------"
                 printf %s "$HIVE_INIT_ERROR"
+                echo -e "\n------------------ FULL DEBUG LOG END --------------------"
+                echo "ERROR: Hive schema init failed with exit code $EXIT_CODE"
                 exit 1
               fi
             else
               echo "Hive schema has been successfully initialized"
             fi
-
             {{ end }}
 
             echo -e " \n-----Validating Hive Schema-----"
