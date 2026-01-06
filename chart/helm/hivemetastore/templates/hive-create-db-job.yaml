@@ -166,12 +166,18 @@ spec:
 
             echo -e " \n----- Updating Hive Schema-----"
 
-            HIVE_UPDATE_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -upgradeSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            
+            /opt/hive-metastore/bin/schematool -verbose -upgradeSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} > /tmp/hive_upgrade.log 2>&1
             EXIT_CODE=$?
+            
+            HIVE_UPDATE_ERROR=$(cat /tmp/hive_upgrade.log)
+            
             if [ $EXIT_CODE -ne 0 ]
             then
-                echo "ERROR: Hive schema init failed."
-                printf %s "$HIVE_INIT_ERROR"
+                echo "------------------ UPGRADE DEBUG LOG START ------------------"
+                echo "$HIVE_UPDATE_ERROR"
+                echo "------------------ UPGRADE DEBUG LOG END --------------------"
+                echo "ERROR: Hive schema upgrade failed."
                 exit 1
             else
               echo "Hive schema has been successfully updated"
