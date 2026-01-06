@@ -51,6 +51,7 @@ securityContext:
   seccompProfile:
     type: RuntimeDefault
   allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 10002
 
@@ -106,7 +107,11 @@ extraSecrets: {}
 #        Here
 #        -----END CERTIFICATE-----
 
-extraVolumes: []
+extraVolumes:
+  - name: common-space
+    emptyDir: {}
+  - name: java-cacerts-dir
+    emptyDir: {}     
 #  - name: tls-custom-cert
 #    secret:
 #      secretName: mysslcert
@@ -114,7 +119,13 @@ extraVolumes: []
 #    secret:
 #      secretName: s3cert
 
-extraVolumeMounts: []
+extraVolumeMounts:
+  - name: common-space
+    mountPath: /tmp
+    subPath: tmp
+  - name: java-cacerts-dir
+    mountPath: /java-security
+    subPath: java-security
 #  - name: tls-custom-cert
 #    mountPath: /home/metastore/.postgresql/root.crt
 #    subPath: mysslcert.crt
