@@ -122,7 +122,6 @@ extraVolumes:
 extraVolumeMounts:
   - name: common-space
     mountPath: /tmp
-    subPath: tmp
   - name: java-cacerts-dir
     mountPath: /java-security
     subPath: java-security
