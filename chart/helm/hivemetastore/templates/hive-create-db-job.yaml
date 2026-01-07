@@ -33,6 +33,10 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        - name: common-space     
+          emptyDir: {}   
+        - name: java-cacerts-dir     
+          emptyDir: {}
         {{- if .Values.extraVolumes }}
           {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
         {{- end }}
@@ -58,6 +62,11 @@ spec:
               mountPath: {{.path}}
               subPath: {{.subPath}}
           {{- end }}
+            - name: common-space     
+              mountPath: /tmp   
+            - name: java-cacerts-dir     
+              mountPath: /java-security
+              subPath: java-security
 
         args:
           - "-c"

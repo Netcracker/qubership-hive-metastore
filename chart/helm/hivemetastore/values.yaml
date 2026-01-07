@@ -107,11 +107,7 @@ extraSecrets: {}
 #        Here
 #        -----END CERTIFICATE-----
 
-extraVolumes:
-  - name: common-space
-    emptyDir: {}
-  - name: java-cacerts-dir
-    emptyDir: {}     
+extraVolumes: []
 #  - name: tls-custom-cert
 #    secret:
 #      secretName: mysslcert
@@ -119,12 +115,7 @@ extraVolumes:
 #    secret:
 #      secretName: s3cert
 
-extraVolumeMounts:
-  - name: common-space
-    mountPath: /tmp
-  - name: java-cacerts-dir
-    mountPath: /java-security
-    subPath: java-security
+extraVolumeMounts: []
 #  - name: tls-custom-cert
 #    mountPath: /home/metastore/.postgresql/root.crt
 #    subPath: mysslcert.crt
