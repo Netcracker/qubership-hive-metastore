@@ -88,6 +88,11 @@ spec:
               containerPort: 9028
               protocol: TCP
           volumeMounts:
+            - name: common-space     
+              mountPath: /tmp   
+            - name: java-cacerts-dir     
+              mountPath: /java-security
+              subPath: java-security
             - name: log4j2-properties
               mountPath: /opt/hive-metastore/conf/metastore-log4j2.properties
               subPath: log4j2.properties
@@ -134,6 +139,10 @@ spec:
           resources:
             {{- toYaml .Values.hiveMetastore.resources | nindent 12 }}
       volumes:
+        - name: common-space     
+          emptyDir: {}   
+        - name: java-cacerts-dir     
+          emptyDir: {}
         - name: log4j2-properties
           configMap:
             name: log4j2-properties
