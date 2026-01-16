@@ -542,6 +542,22 @@ Configuration string format: <provider1[:prvdr2[:reg[:srv]]]>
 
 TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
 
+### Security Hardening: Read-Only Root Filesystem
+
+To improve the security posture of the application, the deployment is configured with a read-only root filesystem. This prevents the container process from writing to any location on the disk except for specifically designated volumes.
+The following settings are applied:
+```
+securityContext:
+  readOnlyRootFilesystem: true
+```  
+ Since the root filesystem is locked, we use emptyDir volumes to provide writable space for temporary operations and for certificates storage. Automated Volume Mounts so no need to manually configure additional storage. 
+ The following volumes are already provisioned in the deployment to handle standard application requirements:
+
+ | Volume Name | Mount Path | Purpose | 
+ |:-------------:|:---------:|:------------:|
+ | common-space | /tmp | Provides a writable area for temporary files, logs, and general OS-level buffers. |
+ | java-cacerts-dir| /java-security | Used specifically for managing Java truststores and security certificates at runtime. |
+
 # Installation
 
 The installation procedure is specified in the below sub-sections.
