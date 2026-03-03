@@ -460,13 +460,12 @@ extraVolumes:
 
 extraVolumeMounts:
   - name: s3-tls-cert
-    mountPath: /opt/apache-hive-metastore-4.0.1-bin/certs/s3.pem
-    subPath: s3.pem
+    mountPath: /opt/hive-metastore/trustcerts
     readOnly: true
 
 env:
   - name: CURL_CA_BUNDLE
-    value: '/opt/apache-hive-metastore-4.0.1-bin/certs/'
+    value: '/opt/hive-metastore/trustcerts/subpath-with-s3-ca.crt'
 ```
 
 It is impossible to ignore certificate validation in hive 4.1.0 and above since it uses AWS java SDK v2. However in previous versions or if custom image with AWS java SDK v1 is used, it is possible to ignore certificate validation by setting the following properties:
