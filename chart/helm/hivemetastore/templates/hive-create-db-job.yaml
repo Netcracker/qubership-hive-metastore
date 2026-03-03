@@ -181,7 +181,7 @@ spec:
             if [ $EXIT_CODE -ne 0 ]
             then
                 echo "ERROR: Hive schema init failed."
-                printf %s "$HIVE_INIT_ERROR"
+                printf %s "$HIVE_UPDATE_ERROR"
                 exit 1
             else
               echo "Hive schema has been successfully updated"
@@ -215,10 +215,17 @@ spec:
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
-              echo "ERROR: Hive schema validation failed."
-              printf %s "$HIVE_VALID_ERROR"
-              if [[ "$HIVE_VALID_ERROR" =~ .*"Failed in schema version validation".* ]]
+              if [[ "$HIVE_VALID_ERROR" =~ .*"Failed in schema version validation".* ]] || [[ "$HIVE_VALID_ERROR" =~ .*"is not compatible".* ]]
               then 
+                if [[ "$HIVE_VALID_ERROR" =~ .*"is not compatible".* ]]
+                then
+                  CURRENT_HIVE_VER=$(echo "$HIVE_VALID_ERROR" | grep "Hive Version:" | sed 's/.*Hive Version: \([^,]*\).*/\1/')
+                  CURRENT_DB_VER=$(echo "$HIVE_VALID_ERROR" | grep "Database Schema Version:" | sed 's/.*Database Schema Version: \(.*\)/\1/')
+                
+                  echo "Schema version validation failed, current Database schema version is $CURRENT_DB_VER, hive version is $CURRENT_HIVE_VER, will try updating automatically ..."
+                else
+                  echo "Schema version validation failed, will try updating automatically ..."
+                fi
                 echo -e " \n-----Upgrading Hive Schema-----"
                 HIVE_UPGRADE_SCHEMA=$(/opt/hive-metastore/bin/schematool  -verbose -upgradeSchema -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1 > /dev/null)
                 EXIT_CODE=$?
