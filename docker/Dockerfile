@@ -49,6 +49,7 @@ ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
 ENV HIVE_HOME=/opt/hive-metastore
 ENV HADOOP_HOME=/opt/hadoop
 ENV HADOOP_YARN_HOME=/opt/hadoop
+ENV HADOOP_MAPRED_HOME=/opt/hadoop
 
 USER root
 
