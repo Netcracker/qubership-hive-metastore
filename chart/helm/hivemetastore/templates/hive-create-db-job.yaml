@@ -222,7 +222,7 @@ spec:
                   CURRENT_HIVE_VER=$(echo "$HIVE_VALID_ERROR" | grep "Hive Version:" | sed 's/.*Hive Version: \([^,]*\).*/\1/')
                   CURRENT_DB_VER=$(echo "$HIVE_VALID_ERROR" | grep "Database Schema Version:" | sed 's/.*Database Schema Version: \(.*\)/\1/')
                 
-                  echo "Schema version validation failed, current PG version is $CURRENT_DB_VER, hive version is $CURRENT_HIVE_VER, will try updating automatically ..."
+                  echo "Schema version validation failed, current Database schema version is $CURRENT_DB_VER, hive version is $CURRENT_HIVE_VER, will try updating automatically ..."
                 else
                   echo "Schema version validation failed, will try updating automatically ..."
                 fi
