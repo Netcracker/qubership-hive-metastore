@@ -219,7 +219,12 @@ spec:
               then 
                 if [[ "$HIVE_VALID_ERROR" =~ .*"is not compatible".* ]]
                 then
-                  echo "$HIVE_VALID_ERROR, will try updating automatically ..."
+                  CURRENT_HIVE_VER=$(echo "$HIVE_VALID_ERROR" | grep "Hive Version:" | sed 's/.*Hive Version: \([^,]*\).*/\1/')
+                  CURRENT_DB_VER=$(echo "$HIVE_VALID_ERROR" | grep "Database Schema Version:" | sed 's/.*Database Schema Version: \(.*\)/\1/')
+                
+                  echo "Schema version validation failed, current PG version is $CURRENT_DB_VER, hive version is $CURRENT_HIVE_VER, will try updating automatically ..."
+                else
+                  echo "Schema version validation failed, will try updating automatically ..."
                 fi
                 echo -e " \n-----Upgrading Hive Schema-----"
                 HIVE_UPGRADE_SCHEMA=$(/opt/hive-metastore/bin/schematool  -verbose -upgradeSchema -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1 > /dev/null)
