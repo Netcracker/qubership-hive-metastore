@@ -27,7 +27,6 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
         --exclude="share/doc" \
         --exclude="share/hadoop/client" \
         --exclude="share/hadoop/yarn" \
-        --exclude="share/hadoop/mapreduce" \
         --exclude="*/jdiff" --exclude="*/sources" --exclude="*tests.jar" --exclude="*/webapps" && \
     curl -k https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
     curl -k -L $MAVEN_REPO/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
@@ -49,7 +48,6 @@ ENV TRUST_CERTS_DIR=/opt/hive-metastore/trustcerts
 ENV HIVE_HOME=/opt/hive-metastore
 ENV HADOOP_HOME=/opt/hadoop
 ENV HADOOP_YARN_HOME=/opt/hadoop
-ENV HADOOP_MAPRED_HOME=/opt/hadoop
 
 USER root
 
