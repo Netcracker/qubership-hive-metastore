@@ -71,13 +71,13 @@ spec:
               mountPath: /java-security
               subPath: java-security
             - name: db-credentials
-              mountPath: /tmp/db-creds
+              mountPath: /db-creds
               readOnly: true
         args:
           - "-c"
           - |-
             
-            get_secret() { cat "/tmp/db-creds/$1"; }
+            get_secret() { cat "/db-creds/$1"; }
 
             DB_USER=$(get_secret "db-user")
             DB_PASS=$(get_secret "db-password")
