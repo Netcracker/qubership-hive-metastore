@@ -37,6 +37,9 @@ spec:
           emptyDir: {}   
         - name: java-cacerts-dir     
           emptyDir: {}
+        - name: db-credentials
+          secret:
+            secretName: {{ .Release.Name }}-db-job-credentials
         {{- if .Values.extraVolumes }}
           {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
         {{- end }}
@@ -67,10 +70,19 @@ spec:
             - name: java-cacerts-dir     
               mountPath: /java-security
               subPath: java-security
-
+            - name: db-credentials
+              mountPath: /db-creds
+              readOnly: true
         args:
           - "-c"
           - |-
+            
+            get_secret() { cat "/db-creds/$1"; }
+
+            DB_USER=$(get_secret "db-user")
+            DB_PASS=$(get_secret "db-password")
+            PSQL_URL=$(get_secret "db-url")
+            JDBC_URL=$(get_secret "jdbc-url")
 
             WRITABLE_CACERTS="/java-security/cacerts"
             ORIGINAL_CACERTS="${JAVA_HOME}/lib/security/cacerts"
@@ -90,8 +102,7 @@ spec:
             {{ if .Values.hiveInitJob.cleanupDB }}
             
             echo -e "-----Clean Up DB-------"
-            
-            OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "drop database if exists {{ .Values.hive.db }} with (force);" 2>&1)
+            OUTPUT=$(psql "${PSQL_URL}" -c "drop database if exists {{ .Values.hive.db }} with (force);" 2>&1)
             EXIT_CODE=$?
             echo "Command output "$OUTPUT""
             
@@ -101,16 +112,15 @@ spec:
               exit 1
             else
               if [[ "$OUTPUT" == *"DROP DATABASE"* ]]
-                then
-                  echo "Hive database has been successfully dropped"
+              then
+                echo "Hive database has been successfully dropped"
               fi
             fi
             
             {{ end }}
             
             echo -e "\n-----Creating Hive user in PG-----"
-
-            CREATE_USER_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "create user {{ include "postgres.hive.user" . }} with encrypted password '{{ include "postgres.hive.password" . }}';" 2>&1)
+            CREATE_USER_OUTPUT=$(psql "${PSQL_URL}" -c "create user ${DB_USER} with encrypted password '${DB_PASS}';" 2>&1)
             EXIT_CODE=$?
             echo "Command output $CREATE_USER_OUTPUT"
 
@@ -131,14 +141,12 @@ spec:
             fi
 
             echo -e " \n-----Grant user in schema-----"
-            
-            GRANT_USER=$(psql {{ include "postgres.psql.connection.url" . }} -c "grant usage on schema pg_catalog to {{ include "postgres.hive.user" . }};" 2>&1)
+            GRANT_USER=$(psql "${PSQL_URL}" -c "grant usage on schema pg_catalog to ${DB_USER};" 2>&1)
             EXIT_CODE=$?
             echo "Command output $GRANT_USER"
 
             echo -e " \n-----Creating Hive DB in PG-----"
-
-            CREATE_DB_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "create database {{ .Values.hive.db }} owner {{ include "postgres.hive.user" . }};" 2>&1)
+            CREATE_DB_OUTPUT=$(psql "${PSQL_URL}" -c "create database {{ .Values.hive.db }} owner ${DB_USER};" 2>&1)
             EXIT_CODE=$?
             echo "Command output $CREATE_DB_OUTPUT"
 
@@ -161,22 +169,19 @@ spec:
 
 
             echo -e "\n-----Permissions Hive DB in PG-----"
-            
-            PERMISSIONS_DB_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "grant all privileges on database {{ .Values.hive.db }} to {{ include "postgres.hive.user" . }};" 2>&1)
+            PERMISSIONS_DB_OUTPUT=$(psql "${PSQL_URL}" -c "grant all privileges on database {{ .Values.hive.db }} to ${DB_USER};" 2>&1)
             EXIT_CODE=$?
             echo -e "\n-----Permissions Hive DB updated-----"
             
             echo -e "\n-----Grants Hive DB in PG-----"
-            
-            GRANTS_DB_OUTPUT=$(psql {{ include "postgres.psql.connection.url" . }} -c "alter database {{ .Values.hive.db }} owner to {{ include "postgres.hive.user" . }};" 2>&1)
+            GRANTS_DB_OUTPUT=$(psql "${PSQL_URL}" -c "alter database {{ .Values.hive.db }} owner to ${DB_USER};" 2>&1)
             EXIT_CODE=$?            
             echo -e "\n-----Grants Hive DB updated-----"
 
             {{ if .Values.hiveInitJob.upgradeSchema }}
 
             echo -e " \n----- Updating Hive Schema-----"
-
-            HIVE_UPDATE_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -upgradeSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            HIVE_UPDATE_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -upgradeSchema -dbType postgres -userName "${DB_USER}" -passWord "${DB_PASS}" -url "${JDBC_URL}" -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
@@ -190,8 +195,7 @@ spec:
             {{ else }}
 
             echo -e " \n-----Initializing Hive Schema-----"
-
-            HIVE_INIT_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -initSchema -dbType postgres -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
+            HIVE_INIT_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -initSchema -dbType postgres -userName "${DB_USER}" -passWord "${DB_PASS}" -url "${JDBC_URL}" -driver {{ .Values.postgres.driver }} 2>&1 > /dev/null)
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
@@ -210,8 +214,7 @@ spec:
             {{ end }}
 
             echo -e " \n-----Validating Hive Schema-----"
-
-            HIVE_VALID_ERROR=$(/opt/hive-metastore/bin/schematool  -verbose -validate -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1)
+            HIVE_VALID_ERROR=$(/opt/hive-metastore/bin/schematool -verbose -validate -dbType postgres -url "${JDBC_URL}" -driver {{ .Values.postgres.driver }} -userName "${DB_USER}" -passWord "${DB_PASS}" 2>&1)
             EXIT_CODE=$?
             if [ $EXIT_CODE -ne 0 ]
             then
@@ -227,7 +230,7 @@ spec:
                   echo "Schema version validation failed, will try updating automatically ..."
                 fi
                 echo -e " \n-----Upgrading Hive Schema-----"
-                HIVE_UPGRADE_SCHEMA=$(/opt/hive-metastore/bin/schematool  -verbose -upgradeSchema -dbType postgres -url 'jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&")}}' -driver {{ .Values.postgres.driver }} -userName {{ include "postgres.hive.user" . }} -passWord {{ include "postgres.hive.password" . }} 2>&1 > /dev/null)
+                HIVE_UPGRADE_SCHEMA=$(/opt/hive-metastore/bin/schematool  -verbose -upgradeSchema -dbType postgres -url "${JDBC_URL}" -driver {{ .Values.postgres.driver }} -userName "${DB_USER}" -passWord "${DB_PASS}" 2>&1 > /dev/null)
                 EXIT_CODE=$?
                 if [ $EXIT_CODE -ne 0 ]
                 then
