@@ -83,6 +83,13 @@ MinIO S3 secretkey
 {{- end -}}
 
 {{/*
+MinIO S3 bucket
+*/}}
+{{- define "s3.warehouseDir" -}}
+    {{- .Values.s3.warehouseDir -}}
+{{- end -}}
+
+{{/*
 Postgres Host
 */}}
 {{- define "postgres.host" -}}
@@ -123,6 +130,13 @@ Hive Password
 */}}
 {{- define "postgres.hive.password" -}}
     {{- .Values.hive.password -}}
+{{- end -}}
+
+{{/*
+Hive Database
+*/}}
+{{- define "postgres.hive.db" -}}
+    {{- .Values.hive.db -}}
 {{- end -}}
 
 {{/*
