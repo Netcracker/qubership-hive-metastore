@@ -89,7 +89,8 @@ MinIO S3 bucket
   {{- if .Values.s3.warehouseDir -}}
     {{- .Values.s3.warehouseDir -}}
   {{- else -}}
-    {{- printf "s3a://%s-warehouse/warehouse" .Release.Namespace -}}
+    {{- $cleanNamespace := .Release.Namespace | replace "_" "-" -}}
+    {{- printf "s3a://%s-warehouse/warehouse" $cleanNamespace -}}
   {{- end -}}
 {{- end -}}
 
@@ -140,7 +141,8 @@ Hive Password
 Hive Database
 */}}
 {{- define "postgres.hive.db" -}}
-{{- default (printf "%s-db" .Release.Namespace) .Values.hive.db | trunc 63 | trimSuffix "-" -}}
+  {{- $db := default (printf "%s-db" .Release.Namespace) .Values.hive.db -}}
+  {{- $db | replace "-" "_" | trunc 63 | trimSuffix "_" -}}
 {{- end -}}
 
 {{/*
