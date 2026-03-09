@@ -86,7 +86,11 @@ MinIO S3 secretkey
 MinIO S3 bucket
 */}}
 {{- define "s3.warehouseDir" -}}
-  {{- default (printf "%s-warehouse" .Release.Namespace) .Values.s3.warehouseDir | trunc 63 | trimSuffix "-" -}}
+  {{- if .Values.s3.warehouseDir -}}
+    {{- .Values.s3.warehouseDir -}}
+  {{- else -}}
+    {{- printf "s3a://%s-warehouse/warehouse" .Release.Namespace -}}
+  {{- end -}}
 {{- end -}}
 
 {{/*
