@@ -122,7 +122,7 @@ spec:
                 - /bin/sh
                 - -c
                 - |-
-                  /opt/hive-metastore/bin/schematool  -verbose -info -dbType postgres -userName $PG_USERNAME -passWord $PG_PASSWORD -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName $HIVE_USERNAME -passWord $HIVE_PASSWORD
+                  /opt/hive-metastore/bin/schematool  -verbose -info -dbType postgres -userName $PG_USERNAME -passWord $PG_PASSWORD -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ include "postgres.hive.db" . }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName $HIVE_USERNAME -passWord $HIVE_PASSWORD
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 15 }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 30 }}

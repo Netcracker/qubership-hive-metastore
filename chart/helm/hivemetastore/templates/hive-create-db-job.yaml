@@ -102,7 +102,7 @@ spec:
             {{ if .Values.hiveInitJob.cleanupDB }}
             
             echo -e "-----Clean Up DB-------"
-            OUTPUT=$(psql "${PSQL_URL}" -c "drop database if exists {{ .Values.hive.db }} with (force);" 2>&1)
+            OUTPUT=$(psql "${PSQL_URL}" -c "drop database if exists {{ include "postgres.hive.db" . }} with (force);" 2>&1)
             EXIT_CODE=$?
             echo "Command output "$OUTPUT""
             
@@ -146,7 +146,7 @@ spec:
             echo "Command output $GRANT_USER"
 
             echo -e " \n-----Creating Hive DB in PG-----"
-            CREATE_DB_OUTPUT=$(psql "${PSQL_URL}" -c "create database {{ .Values.hive.db }} owner ${DB_USER};" 2>&1)
+            CREATE_DB_OUTPUT=$(psql "${PSQL_URL}" -c "create database {{ include "postgres.hive.db" . }} owner ${DB_USER};" 2>&1)
             EXIT_CODE=$?
             echo "Command output $CREATE_DB_OUTPUT"
 
@@ -169,12 +169,12 @@ spec:
 
 
             echo -e "\n-----Permissions Hive DB in PG-----"
-            PERMISSIONS_DB_OUTPUT=$(psql "${PSQL_URL}" -c "grant all privileges on database {{ .Values.hive.db }} to ${DB_USER};" 2>&1)
+            PERMISSIONS_DB_OUTPUT=$(psql "${PSQL_URL}" -c "grant all privileges on database {{ include "postgres.hive.db" . }} to ${DB_USER};" 2>&1)
             EXIT_CODE=$?
             echo -e "\n-----Permissions Hive DB updated-----"
             
             echo -e "\n-----Grants Hive DB in PG-----"
-            GRANTS_DB_OUTPUT=$(psql "${PSQL_URL}" -c "alter database {{ .Values.hive.db }} owner to ${DB_USER};" 2>&1)
+            GRANTS_DB_OUTPUT=$(psql "${PSQL_URL}" -c "alter database {{ include "postgres.hive.db" . }} owner to ${DB_USER};" 2>&1)
             EXIT_CODE=$?            
             echo -e "\n-----Grants Hive DB updated-----"
 

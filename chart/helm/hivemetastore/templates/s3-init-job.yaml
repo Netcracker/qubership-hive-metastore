@@ -77,7 +77,7 @@ spec:
           - "-c"
           - |-
             s3_url="{{ include "s3.endpoint" . }}"
-            s3_uri="{{ .Values.s3.warehouseDir }}"
+            s3_uri="{{ include  "s3.warehouseDir" . }}"
             aws_sigv4="{{ .Values.s3InitJob.awsSigV4 }}"
             curlOpts="--retry 5"
             

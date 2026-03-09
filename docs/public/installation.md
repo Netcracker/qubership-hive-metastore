@@ -415,7 +415,7 @@ metastoreConfigsecret:
     ...
       <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&amp;")}}</value>
+        <value>jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ include "postgres.hive.db" . }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&amp;")}}</value>
       </property>
     ...
     </configuration>
