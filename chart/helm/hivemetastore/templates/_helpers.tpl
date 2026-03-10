@@ -83,6 +83,18 @@ MinIO S3 secretkey
 {{- end -}}
 
 {{/*
+MinIO S3 bucket
+*/}}
+{{- define "s3.warehouseDir" -}}
+  {{- if .Values.s3.warehouseDir -}}
+    {{- .Values.s3.warehouseDir -}}
+  {{- else -}}
+    {{- $cleanNamespace := .Release.Namespace | replace "_" "-" -}}
+    {{- printf "s3a://%s-warehouse/hive" $cleanNamespace -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Postgres Host
 */}}
 {{- define "postgres.host" -}}
@@ -123,6 +135,14 @@ Hive Password
 */}}
 {{- define "postgres.hive.password" -}}
     {{- .Values.hive.password -}}
+{{- end -}}
+
+{{/*
+Hive Database
+*/}}
+{{- define "postgres.hive.db" -}}
+  {{- $db := default (printf "%s-db" .Release.Namespace) .Values.hive.db -}}
+  {{- $db | replace "-" "_" | trunc 63 | trimSuffix "_" -}}
 {{- end -}}
 
 {{/*

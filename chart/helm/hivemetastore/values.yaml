@@ -212,14 +212,14 @@ s3:
   endpoint: ""
   accessKey: ""
   secretKey: ""
-  warehouseDir: s3a://warehouse/hive
+  warehouseDir: ""
 
 hive:
   # hive PG user
   user: ""
   # hive PG user password
   password: ""
-  db: metastore_db
+  db: ""
 
 postgres:
   host: pg-patroni.postgres.svc
@@ -244,7 +244,7 @@ metastoreConfig:
     <configuration>
       <property>
         <name>metastore.warehouse.dir</name>
-        <value>{{ .Values.s3.warehouseDir }}</value>
+        <value>{{ include  "s3.warehouseDir" . }}</value>
       </property>
       <property>
         <name>metastore.thrift.port</name>
@@ -302,7 +302,7 @@ metastoreConfigsecret:
       </property>
       <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ .Values.hive.db }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&amp;")}}</value>
+        <value>jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ include "postgres.hive.db" . }}{{ include "jdbcParams" (dict "Values" .Values "separator" "&amp;")}}</value>
       </property>
       <property>
         <name>javax.jdo.option.ConnectionUserName</name>
