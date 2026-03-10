@@ -90,7 +90,7 @@ MinIO S3 bucket
     {{- .Values.s3.warehouseDir -}}
   {{- else -}}
     {{- $cleanNamespace := .Release.Namespace | replace "_" "-" -}}
-    {{- printf "s3a://%s-warehouse/warehouse" $cleanNamespace -}}
+    {{- printf "s3a://%s-warehouse/hive" $cleanNamespace -}}
   {{- end -}}
 {{- end -}}
 
