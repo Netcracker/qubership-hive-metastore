@@ -57,6 +57,28 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{/*
+Define hive pod security context
+*/}}
+{{- define "hive-metastore.podSecurityContext" -}}
+{{- if eq (default "KUBERNETES" .Values.PAAS_PLATFORM) "OPENSHIFT" }}
+{{ toYaml (omit .Values.podSecurityContext "runAsUser" "fsGroup") }}
+{{- else }}
+{{- toYaml .Values.podSecurityContext }}
+{{- end }}
+{{- end }}
+
+{{/*
+Define hive container security context
+*/}}
+{{- define "hive-metastore.containerSecurityContext" -}}
+{{- if eq (default "KUBERNETES" .Values.PAAS_PLATFORM) "OPENSHIFT" }}
+{{ toYaml (omit .Values.securityContext "runAsUser") }}
+{{- else }}
+{{- toYaml .Values.securityContext }}
+{{- end }}
+{{- end }}
+
 {{ define "hivemetastore_image" -}}
 {{ printf "%s:%v" (.Values.image.repository) (.Values.image.tag) }}
 {{- end }}
