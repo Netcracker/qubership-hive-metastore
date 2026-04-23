@@ -47,13 +47,13 @@ spec:
       {{- end }}
       automountServiceAccountToken: false
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- include "hive-metastore.podSecurityContext" . | nindent 8 }}
       containers:
         - name: {{ include "hive-metastore.name" . }}
           image: {{ template "hivemetastore_image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- include "hive-metastore.containerSecurityContext" . | nindent 12 }}
           env:
             {{- if .Values.env }}
             {{- toYaml .Values.env | nindent 12 }}
