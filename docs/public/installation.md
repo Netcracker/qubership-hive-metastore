@@ -126,6 +126,7 @@ The parameters are specified below.
 ## Hive-Metastore
 
 The following table lists the configurable parameters of the Hive-Metastore chart and their default values.
+The Hivemetastore charts also includes a values.schema.json file, a custom schema that defines the structure, types, and allowed fields for values.yaml, ensuring configurations are valid and consistent. This enables Helm to validate inputs during linting and templating, helping prevent misconfigurations at deployment time.
 
 **Note**: It is required to fill the user/password parameters.
 
