@@ -2,40 +2,39 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "description": "Schema for hivemetastore Helm chart values.",
-  "additionalProperties": true,
   "definitions": {
-        "io.k8s.apimachinery.pkg.api.resource.Quantity": {
-            "oneOf": [
-                {
-                    "type": "string"
-                },
-                {
-                    "type": "number"
-                }
-            ]
+    "io.k8s.apimachinery.pkg.api.resource.Quantity": {
+      "oneOf": [
+        {
+         "type": "string"
         },
-        "io.k8s.api.core.v1.ResourceRequirements": {
-            "description": "ResourceRequirements describes the compute resource requirements.",
-            "properties": {
-                "limits": {
-                    "additionalProperties": {
-                        "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
-                    },
-                    "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
-                    "type": "object"
-                },
-                "requests": {
-                    "additionalProperties": {
-                        "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
-                    },
-                    "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
-                    "type": "object"
-                }
-            },
-            "type": "object",
-            "additionalProperties": false
+        {
+         "type": "number"
         }
+      ]
     },
+    "io.k8s.api.core.v1.ResourceRequirements": {
+      "description": "ResourceRequirements describes the compute resource requirements.",
+      "properties": {
+        "limits": {
+          "additionalProperties": {
+            "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+          },
+          "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "type": "object"
+        },
+         "requests": {
+           "additionalProperties": {
+             "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+            },
+            "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+            "type": "object"
+         }
+      },
+      "type": "object",
+      "additionalProperties": false
+    }
+   },
   "properties": {
     "image": {
       "type": "object",
@@ -44,17 +43,17 @@
       "properties": {
         "repository": {
           "type": "string",
-          "description": "Docker image repository for the Hive Metastore container.",
+          "description": "The image repository.",
           "default": "ghcr.io/netcracker/qubership-hive-metastore"
         },
         "pullPolicy": {
           "type": "string",
-          "description": "Image pull policy used by Kubernetes.",
+          "description": "The image pull policy.",
           "default": "IfNotPresent"
         },
         "tag": {
           "type": "string",
-          "description": "Image tag for the Hive Metastore container.",
+          "description": "This overrides the image tag, which is the hive-metastore version by default",
           "default": "main"
         }
       }
@@ -91,7 +90,7 @@
     },
     "priorityClassName": {
       "type": ["string", "null"],
-      "description": "Optional priority class name for the Pod.",
+      "description": "Priority class name for hive metastore pod.",
       "default": null
     },
     "serviceAccount": {
@@ -101,19 +100,19 @@
       "properties": {
         "create": {
           "type": "boolean",
-          "description": "Whether to create a service account for the deployment.",
+          "description": "It specifies whether a service account should be created for Hive-metastore.",
           "default": true
         },
         "annotations": {
           "type": "object",
-          "description": "Annotations to add to the created service account.",
+          "description": "The annotations to be added to the service account.",
           "additionalProperties": {
             "type": "string"
           }
         },
         "name": {
           "type": "string",
-          "description": "Name of the service account to use when create is false.",
+          "description": "The Hive-metastore service account name to use. If not set and create is true, a name is generated using the fullname template.",
           "default": ""
         }
       }
@@ -127,13 +126,11 @@
     },
     "podSecurityContext": {
       "type": "object",
-      "description": "Pod-level security context for the Hive Metastore Pod.",
-      "additionalProperties": true
+      "description": "Pod-level security context for the Hive Metastore Pod."
     },
     "securityContext": {
       "type": "object",
       "description": "Container-level security context for the Hive Metastore Pod.",
-      "additionalProperties": true,
       "properties": {
         "capabilities": {
           "type": "object",
@@ -179,7 +176,7 @@
         },
         "runAsUser": {
           "type": "integer",
-          "description": "UID to run the container process as.",
+          "description": "All processes in containers that run with the specified user.",
           "default": 10002
         }
       }
@@ -191,12 +188,12 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable Prometheus monitoring annotations and scraping.",
+          "description": "The string to submit a Grafana dashboard. The custom parameter is not present in the values.yaml file.",
           "default": true
         },
         "interval": {
           "type": "string",
-          "description": "Scrape interval for Prometheus monitoring.",
+          "description": "This parameter parameter responsible for the amount of time after which the pod metrics are polled.",
           "default": "60s"
         }
       }
@@ -213,17 +210,17 @@
           "properties": {
             "enabled": {
               "type": "boolean",
-              "description": "Enable or disable Prometheus alert rules.",
+              "description": "This parameter submits Prometheus rules for the Hive-Metastore.",
               "default": true
             },
             "cpuThreshold": {
               "type": "integer",
-              "description": "CPU usage percentage threshold for alerts.",
+              "description": "This parameter specifies the percentage of CPU resources' limit that triggers a CPU threshold alert. Note that the resource limit should be set.",
               "default": 90
             },
             "memoryThreshold": {
               "type": "integer",
-              "description": "Memory usage percentage threshold for alerts.",
+              "description": "This parameter specifies the percentage of memory resources' limit that triggers a memory threshold alert. Note that the resource limit should be set.",
               "default": 90
             }
           }
@@ -237,12 +234,12 @@
       "properties": {
         "type": {
           "type": "string",
-          "description": "Kubernetes service type exposed for the Hive Metastore.",
+          "description": "The type of Kubernetes service.",
           "default": "ClusterIP"
         },
         "port": {
           "type": "integer",
-          "description": "Service port for the Hive Metastore Thrift endpoint.",
+          "description": "It specifies the Hive-metastore HTTP server port.",
           "default": 9083
         }
       }
@@ -254,12 +251,12 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable TLS for the Hive Metastore service.",
+          "description": "Enables secure connections from Hive Metastore to PG and S3.",
           "default": false
         },
         "serverSideTls": {
           "type": "boolean",
-          "description": "Enable server-side TLS for the Hive Metastore service.",
+          "description": "Enables TLS for Hive Metastore server if tls.enabled is true.",
           "default": false
         },
         "generateCerts": {
@@ -269,17 +266,17 @@
           "properties": {
             "enabled": {
               "type": "boolean",
-              "description": "Generate TLS certificates automatically.",
+              "description": "The parameter to integrate cert-manager.",
               "default": false
             },
             "secretName": {
               "type": "string",
-              "description": "Secret name used to store generated certificates.",
+              "description": "The name of the certificate for a TLS operation.",
               "default": "hive-metastore-cm-cert"
             },
             "clusterIssuerName": {
               "type": ["string", "null"],
-              "description": "ClusterIssuer name for certificate generation.",
+              "description": "The name of the issuer to create a certificate for a TLS operation.",
               "default": null
             },
             "keystores": {
@@ -294,7 +291,7 @@
                   "properties": {
                     "create": {
                       "type": "boolean",
-                      "description": "Whether to create a JKS keystore.",
+                      "description": "Enables keystore and truststore automatic creation if tls.enabled, tls.serverSideTls and tls.generateCerts.enabled are enabled.",
                       "default": false
                     }
                   }
@@ -352,24 +349,22 @@
     },
     "extraSecrets": {
       "type": "object",
-      "description": "Additional Kubernetes Secret definitions to merge into the chart.",
-      "additionalProperties": true
+      "description": "Allows to create custom secrets to pass them to pods during the deployments. The format for secret data is key/value where key (can be templated) is the name of the secret that will be created, value - an object with the standard 'data' or 'stringData' key (or both). The value associated with those keys must be a string (can be templated)."
     },
     "extraVolumes": {
       "type": "array",
-      "description": "Additional Pod volumes to mount into the Hive Metastore Pod.",
+      "description": "One or more additional volume mounts to add to Hive Metastore and DB init job pods.",
       "default": []
     },
     "extraVolumeMounts": {
       "type": "array",
-      "description": "Extra volume mounts for the Hive Metastore container.",
+      "description": "One or more additional volume mounts to add to Hive Metastore and DB init job pods.",
       "default": []
     },
     "env": {
       "type": "array",
-      "description": "Additional environment variables to pass into the Hive Metastore container.",
+      "description": "Additional env parameters for Hive Metastore Service.",
       "default": []
-      }
     },
     "hiveMetastore": {
       "type": "object",
@@ -385,37 +380,32 @@
     "livenessProbe": {
       "type": "object",
       "description": "Liveness probe configuration for the Hive Metastore container.",
-      "additionalProperties": true,
       "default" : {}
     },
     "readinessProbe": {
       "type": "object",
       "description": "Readiness probe configuration for the Hive Metastore container.",
-      "additionalProperties": true,
       "default": {}
     },
     "nodeSelector": {
       "type": "object",
-      "description": "Node selector labels for scheduling the Hive Metastore Pod.",
+      "description": "This parameter allows you to specify on which nodes of the cluster the Hive-metastore substations should be deployed.",
       "default": {}
     },
     "tolerations": {
       "type": "array",
-      "description": "Kubernetes tolerations for the Hive Metastore Pod.",
-      "default": [],
-      "additionalProperties": true
+      "description": "This parameter allows you to specify the tolerance to special conditions on cluster nodes.",
+      "default": []
 
     },
     "affinity": {
       "type": "object",
-      "description": "Affinity rules for scheduling the Hive Metastore Pod.",
-      "additionalProperties": true
+      "description": "This parameter allows you to specify the preferences for placing hearths on cluster nodes."
     },
     "secretMounts": {
       "type": "array",
-      "description": "Secret mounts for the Hive Metastore Pod.",
-      "default": [],
-      "additionalProperties": true
+      "description": "One or more existing volume mounts to add to Hive Metastore and DB init job pods.",
+      "default": []
     },
     "hiveInitJob": {
       "type": "object",
@@ -424,27 +414,27 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable the Hive Metastore init job.",
+          "description": "The parameter that enables the Pre-install/upgrade Helm job. The job creates a database in PG, initiates the Hive schema, and upgrades if necessary. The database related parameters are set in the postgres and hive sections.",
           "default": true
         },
         "upgradeSchema": {
           "type": "boolean",
-          "description": "Upgrade the Hive Metastore schema during init.",
+          "description": "Enables hive metastore database upgrade. Must be set to to true when upgrading to 4.* versions from 3.* versions without database cleanup.",
           "default": false
         },
         "cleanupDB": {
           "type": "boolean",
-          "description": "Clean up the database during init.",
+          "description": "Enables the Hive metastore database cleanup. The database, the user along with it's grants will be dropped.",
           "default": false
         },
         "priorityClassName": {
           "type": ["string", "null"],
-          "description": "Priority class name for the init job Pod.",
+          "description": "Priority class name for init job.",
           "default": null
         },
         "initAnnotations": {
           "type": "object",
-          "description": "Helm hook annotations for the init job.",
+          "description": "The database init job annotations.",
           "default": {
             "helm.sh/hook": "pre-install,pre-upgrade",
             "helm.sh/hook-delete-policy": "before-hook-creation",
@@ -468,27 +458,27 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable the S3 init job.",
+          "description": "The parameter that enables the Pre-install/upgrade Helm job. The job creates a database in PG, initiates the Hive schema, and upgrades if necessary. The database related parameters are set in the postgres and hive sections.",
           "default": false
         },
         "awsSigV4": {
           "type": "string",
-          "description": "AWS signature version string for S3 access.",
+          "description": "AWS V4 signature authentication configuration of the following format <provider1[:prvdr2[:reg[:srv]]]>. Used to authenticate requests to S3 storage. Configured to work with S3 MinIO by default. Details at https://curl.se/docs/manpage.html.",
           "default": "aws:minio:s3:s3"
         },
         "disableTLSValidation": {
           "type": "boolean",
-          "description": "Disable TLS validation for S3 initialization.",
+          "description": "Disables TLS certificate validation for S3 storage in the job.",
           "default": false
         },
         "priorityClassName": {
           "type": ["string", "null"],
-          "description": "Priority class name for the S3 init job Pod.",
+          "description": "Priority class name for init job",
           "default": null
         },
         "initAnnotations": {
           "type": "object",
-          "description": "Helm hook annotations for the S3 init job.",
+          "description": "The database init job annotations.",
           "default": {
             "helm.sh/hook": "pre-install,pre-upgrade",
             "helm.sh/hook-delete-policy": "before-hook-creation",
@@ -511,22 +501,22 @@
       "properties": {
         "endpoint": {
           "type": "string",
-          "description": "S3 service endpoint.",
+          "description": "The MinIO S3 storage endpoint. Hive-Metastore uses S3 storage to store data.",
           "default": ""
         },
         "accessKey": {
           "type": "string",
-          "description": "S3 access key.",
+          "description": "The MinIO access key.",
           "default": ""
         },
         "secretKey": {
           "type": "string",
-          "description": "S3 secret key.",
+          "description": "The MinIO secret key.",
           "default": ""
         },
         "warehouseDir": {
           "type": "string",
-          "description": "S3 warehouse directory used by Hive Metastore.",
+          "description": "Defaults to s3a://{{ .Release.Namespace }}-warehouse/hive unless a custom path is provided in s3.warehouseDir. The directory in S3 storage, where Hive-Metastore should store its data.",
           "default": ""
         }
       }
@@ -538,17 +528,17 @@
       "properties": {
         "user": {
           "type": "string",
-          "description": "Hive database user name.",
+          "description": "The Hive Metastore to PG connection user that is set as owner of the Hive database. This user is created by hiveInitJob.",
           "default": ""
         },
         "password": {
           "type": "string",
-          "description": "Hive database password.",
+          "description": "The Hive Metastore to PG connection user password. The password of the user is created by hiveInitJob.",
           "default": ""
         },
         "db": {
           "type": "string",
-          "description": "Hive database name.",
+          "description": "Defaults to {{ .Release.Namespace }}_db unless a custom database name is provided in hive.db. The Hive Metastore database created in PG by hiveInitJob.",
           "default": ""
         }
       }
@@ -560,37 +550,37 @@
       "properties": {
         "host": {
           "type": "string",
-          "description": "PostgreSQL host address.",
+          "description": "The PG host, where the Hive Metastore DB is located.",
           "default": "pg-patroni.postgres.svc"
         },
         "port": {
           "type": "integer",
-          "description": "PostgreSQL port number.",
+          "description": "The PG port where the Hive Metastore DB is located.",
           "default": 5432
         },
         "driver": {
           "type": "string",
-          "description": "JDBC driver class name for PostgreSQL.",
+          "description": "The PG connection driver.",
           "default": "org.postgresql.Driver"
         },
         "adminUser": {
           "type": "string",
-          "description": "PostgreSQL admin username used for database management.",
+          "description": "The PG user with permission to create a role and a database. This user is used to prepare a database in PG.",
           "default": ""
         },
         "adminPassword": {
           "type": "string",
-          "description": "PostgreSQL admin password used for database management.",
+          "description": "The password of the user set in postgres.user.",
           "default": ""
         },
         "psqlParams": {
           "type": "string",
-          "description": "Additional psql parameters for PostgreSQL connections.",
+          "description": "PostgreSQL connection parameters used by Hive Metastore database init job.",
           "default": ""
         },
         "jdbcParams": {
           "type": "string",
-          "description": "Additional JDBC parameters appended to the PostgreSQL URL.",
+          "description": "PostgreSQL connection parameters used by Hive Metastore.",
           "default": ""
         }
       }
@@ -621,8 +611,7 @@
       "properties": {
         "metastoreSiteProperties": {
           "type": "string",
-          "description": "XML content for metastore-site properties.",
-          "default": "<configuration>\n      <property>\n        <name>metastore.warehouse.dir</name>\n        <value>{{ include  \"s3.warehouseDir\" . }}</value>\n      </property>\n      <property>\n        <name>metastore.thrift.port</name>\n        <value>{{ .Values.service.port }}</value>\n      </property>\n      <property>\n        <name>metastore.initial.metadata.count.enabled</name>\n        <value>true</value>\n        <description>Enable a metadata count at metastore startup for metrics.</description>\n      </property>\n      <property>\n        <name>metastore.metrics.enabled</name>\n        <value>true</value>\n        <description>Enable metrics on the metastore.</description>\n      </property>\n      <property>\n        <name>metastore.metrics.reporters</name>\n        <value>JMX</value>\n      <description>A comma separated list of metrics reporters to start</description>\n      </property>\n      <property>\n        <name>metastore.async.log.enabled</name>\n        <value>true</value>\n      </property>\n    </configuration>"
+          "description": "XML content for metastore-site properties."
         }
       }
     },
@@ -633,13 +622,11 @@
       "properties": {
         "metastoreSitePropertiesSecret": {
           "type": "string",
-          "description": "Secret value containing Metastore site properties XML.",
-          "default": "<configuration>\n    {{- if .Values.tls.serverSideTls }}\n      <property>\n        <name>metastore.use.SSL</name>\n        <value>true</value>\n      </property>\n      <property>\n        <name>metastore.keystore.path</name>\n        <value>/opt/hive-metastore/certs/keystore.jks</value>\n      </property>\n      <property>\n        <name>metastore.keystore.password</name>\n        <value>{{ .Values.tls.certificates.jks_key }}</value>\n      </property>\n    {{- end }}\n      <property>\n        <name>metastore.task.threads.always</name>\n        <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask</value>\n      </property>\n      <property>\n        <name>metastore.expression.proxy</name>\n        <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>\n      </property>\n      <property>\n        <name>javax.jdo.option.ConnectionDriverName</name>\n        <value>{{ .Values.postgres.driver }}</value>\n      </property>\n      <property>\n        <name>javax.jdo.option.ConnectionURL</name>\n        <value>jdbc:postgresql://{{ include \"postgres.host\" . }}:{{ include \"postgres.port\" . }}/{{ include \"postgres.hive.db\" . }}{{ include \"jdbcParams\" (dict \"Values\" .Values \"separator\" \"&amp;\")}}</value>\n      </property>\n      <property>\n        <name>javax.jdo.option.ConnectionUserName</name>\n        <value>{{ include \"postgres.hive.user\" . }}</value>\n      </property>\n      <property>\n        <name>javax.jdo.option.ConnectionPassword</name>\n        <value>{{ include \"postgres.hive.password\" . }}</value>\n      </property>\n    </configuration>"
+          "description": "Secret value containing Metastore site properties XML."
         },
         "coreSitePropertiesSecret": {
           "type": "string",
-          "description": "Secret value containing core-site XML content.",
-          "default": "<configuration>\n      <property>\n        <name>fs.s3a.access.key</name>\n        <value>{{ include \"s3.accessKey\" . }}</value>\n      </property>\n      <property>\n        <name>fs.s3a.secret.key</name>\n        <value>{{ include \"s3.secretKey\" . }}</value>\n      </property>\n      <property>\n        <name>fs.s3a.connection.ssl.enabled</name>\n        <value>false</value>\n      </property>\n      <property>\n        <name>fs.s3a.endpoint</name>\n        <value>{{ include \"s3.endpoint\" . }}</value>\n      </property>\n      <property>\n        <name>fs.s3a.path.style.access</name>\n        <value>true</value>\n      </property>\n      <property>\n        <name>fs.s3a.impl</name>\n        <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>\n      </property>\n      <property>\n        <name>fs.s3a.fast.upload</name>\n        <value>true</value>\n      </property>\n    </configuration>"
+          "description": "Secret value containing core-site XML content."
         }
       }
     },
@@ -650,14 +637,14 @@
       "properties": {
         "jmxExporterConfig": {
           "type": "string",
-          "description": "Configuration content for the JMX exporter.",
-          "default": "\n    startDelaySeconds: 0\n    ssl: false\n    lowercaseOutputName: true\n    lowercaseOutputLabelNames: true\n    attrNameSnakeCase: true\n    includeObjectNames:\n      - \"metrics:*\"\n      - \"org.apache.hadoop.hive.metastore:*\"\n      - \"jvm:*\"\n      - \"process:*\"\n      - \"java.lang:*\"\n    rules:         \n      - pattern: \"metrics<name=total_count_dbs><>Value\"\n        name: \"count_db\"\n        help: \"Total DBs count.\"\n      - pattern: \"metrics<name=delete_total_count_dbs><>Count\"\n        name: \"delete_total_count_db\"\n        help: \"metrics_delete_total_count_dbs_count Attribute exposed for management\"\n      - pattern: \"metrics<name=total_count_tables><>Value\"\n        name: \"metrics_count_tables\"\n        help: \"metrics_total_count_tables_value Attribute exposed for management\"\n      - pattern: \"metrics<name=delete_total_count_tables><>Count\"\n        name: \"delete_total_count_tables\"\n        help: \"Count table delete\"\n      - pattern: \"metrics<name=open_connections><>Count\"\n        name: \"open_connections_count\"\n        help: \"Open connections attribute exposed for management\"\n      - pattern: \"metrics<name=memory.heap.used><>Value\"\n        name: \"metrics_heap_used\"\n        help: \"metrics_heap_used_value metrics_memory_heap_used_value Attribute exposed for management\"\n      - pattern: \"java.lang<name=MarkSweepCompact, type=GarbageCollector><>CollectionTime\"\n        name: \"marksweepcompact_collectionTime\"\n        help: \"java_lang_marksweepcompact_collectiontime CollectionTime\"\n      - pattern: \"metrics<name=total_count_partitions><>Value\"\n        name: \"metrics_total_count_partitions_hv\"\n        help: \"metrics_total_count_partitions_value Attribute exposed for management\"\n      - pattern: \"metrics<name=create_total_count_partitions><>Count\"\n        name: \"metrics_create_total_count_partitions_hv\"\n        help: \"metrics_create_total_count_partitions_count Attribute exposed for management\"\n      - pattern: \"metrics<name=delete_total_count_partitions><>Count\"\n        name: \"metrics_delete_total_count_partitions_hv\"\n        help: \"metrics_delete_total_count_partitions_count Attribute exposed for management\"\n"
+          "description": "Configuration content for the JMX exporter."
         }
       }
     },
     "log4j2Properties": {
       "type": "string",
-      "description": "Log4j2 configuration properties for the Hive Metastore.",
-      "default": "status = INFO\n  name = MetastoreLog4j2\n  packages = org.apache.hadoop.hive.metastore\n\n  # list of properties\n  property.metastore.log.level = INFO\n  property.metastore.root.logger = console\n  property.metastore.log.dir = ${sys:java.io.tmpdir}/${sys:user.name}\n  property.metastore.log.file = metastore.log\n  property.hive.perflogger.log.level = INFO\n\n  # list of all appenders\n  appenders = console\n\n  # console appender\n  appender.console.type = Console\n  appender.console.name = console\n  appender.console.target = SYSTEM_ERR\n  appender.console.layout.type = PatternLayout\n  appender.console.layout.pattern = %d{ISO8601} %5p [%t] %c{2}: %m%n\n\n  # list of all loggers\n  loggers = DataNucleus, Datastore, JPOX, PerfLogger\n\n  logger.DataNucleus.name = DataNucleus\n  logger.DataNucleus.level = ERROR\n\n  logger.Datastore.name = Datastore\n  logger.Datastore.level = ERROR\n\n  logger.JPOX.name = JPOX\n  logger.JPOX.level = ERROR\n  \n  logger.PerfLogger.name = org.apache.hadoop.hive.ql.log.PerfLogger\n  logger.PerfLogger.level = ${sys:hive.perflogger.log.level}\n\n  # root logger\n  rootLogger.level = ${sys:metastore.log.level}\n  rootLogger.appenderRefs = root\n  rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}"
+      "description": "The Log4j2 configuration. The metastore logging level is set by the property.metastore.log.level property."
     }
+  }
+
 }
