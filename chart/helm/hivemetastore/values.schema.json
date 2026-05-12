@@ -108,7 +108,8 @@
           "description": "The annotations to be added to the service account.",
           "additionalProperties": {
             "type": "string"
-          }
+          },
+          "default": {}
         },
         "name": {
           "type": "string",
@@ -122,11 +123,13 @@
       "description": "Annotations to add to the Hive Metastore Pod.",
       "additionalProperties": {
         "type": "string"
-      }
+      },
+        "default": {}
     },
     "podSecurityContext": {
       "type": "object",
-      "description": "Pod-level security context for the Hive Metastore Pod."
+      "description": "Pod-level security context for the Hive Metastore Pod.",
+      "default": {}
     },
     "securityContext": {
       "type": "object",
@@ -349,7 +352,8 @@
     },
     "extraSecrets": {
       "type": "object",
-      "description": "Allows to create custom secrets to pass them to pods during the deployments. The format for secret data is key/value where key (can be templated) is the name of the secret that will be created, value - an object with the standard 'data' or 'stringData' key (or both). The value associated with those keys must be a string (can be templated)."
+      "description": "Allows to create custom secrets to pass them to pods during the deployments. The format for secret data is key/value where key (can be templated) is the name of the secret that will be created, value - an object with the standard 'data' or 'stringData' key (or both). The value associated with those keys must be a string (can be templated).",
+      "default": {}
     },
     "extraVolumes": {
       "type": "array",
@@ -400,7 +404,8 @@
     },
     "affinity": {
       "type": "object",
-      "description": "This parameter allows you to specify the preferences for placing hearths on cluster nodes."
+      "description": "This parameter allows you to specify the preferences for placing hearths on cluster nodes.",
+      "default": {}
     },
     "secretMounts": {
       "type": "array",
@@ -439,7 +444,6 @@
             "helm.sh/hook": "pre-install,pre-upgrade",
             "helm.sh/hook-delete-policy": "before-hook-creation",
             "helm.sh/hook-weight": "-10"
-
           },
           "additionalProperties": {
             "type": "string"
@@ -611,7 +615,8 @@
       "properties": {
         "metastoreSiteProperties": {
           "type": "string",
-          "description": "XML content for metastore-site properties."
+          "description": "XML content for metastore-site properties.",
+          "default": "see the values.yaml file"
         }
       }
     },
@@ -622,11 +627,13 @@
       "properties": {
         "metastoreSitePropertiesSecret": {
           "type": "string",
-          "description": "Secret value containing Metastore site properties XML."
+          "description": "Secret value containing Metastore site properties XML.",
+          "default": "see the values.yaml file"
         },
         "coreSitePropertiesSecret": {
           "type": "string",
-          "description": "Secret value containing core-site XML content."
+          "description": "Secret value containing core-site XML content.",
+          "default": "see the values.yaml file"
         }
       }
     },
@@ -637,13 +644,15 @@
       "properties": {
         "jmxExporterConfig": {
           "type": "string",
-          "description": "Configuration content for the JMX exporter."
+          "description": "Configuration content for the JMX exporter.",
+          "default": "see the values.yaml file"
         }
       }
     },
     "log4j2Properties": {
       "type": "string",
-      "description": "The Log4j2 configuration. The metastore logging level is set by the property.metastore.log.level property."
+      "description": "The Log4j2 configuration. The metastore logging level is set by the property.metastore.log.level property.",
+      "default": "see the values.yaml file"
     }
   }
 
