@@ -3,13 +3,277 @@
   "type": "object",
   "description": "Schema for hivemetastore Helm chart values.",
   "definitions": {
+    "io.k8s.api.core.v1.SELinuxOptions": {
+      "description": "SELinuxOptions are the labels to be applied to the container",
+      "properties": {
+        "level": {
+          "description": "Level is SELinux level label that applies to the container.",
+          "type": "string"
+        },
+        "role": {
+          "description": "Role is a SELinux role label that applies to the container.",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type is a SELinux type label that applies to the container.",
+          "type": "string"
+        },
+        "user": {
+          "description": "User is a SELinux user label that applies to the container.",
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.AppArmorProfile": {
+      "description": "AppArmorProfile defines a pod or container's AppArmor settings.",
+      "properties": {
+        "localhostProfile": {
+          "description": "localhostProfile indicates a profile loaded on the node that should be used. The profile must be preconfigured on the node to work. Must match the loaded name of the profile. Must be set if and only if type is \"Localhost\".",
+          "type": "string"
+        },
+        "type": {
+          "description": "type indicates which kind of AppArmor profile will be applied. Valid options are:\n  Localhost - a profile pre-loaded on the node.\n  RuntimeDefault - the container runtime's default profile.\n  Unconfined - no AppArmor enforcement.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object",
+      "x-kubernetes-unions": [
+        {
+          "discriminator": "type",
+          "fields-to-discriminateBy": {
+            "localhostProfile": "LocalhostProfile"
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.SeccompProfile": {
+      "description": "SeccompProfile defines a pod/container's seccomp profile settings. Only one profile source may be set.",
+      "properties": {
+        "localhostProfile": {
+          "description": "localhostProfile indicates a profile defined in a file on the node should be used. The profile must be preconfigured on the node to work. Must be a descending path, relative to the kubelet's configured seccomp profile location. Must be set if type is \"Localhost\". Must NOT be set for any other type.",
+          "type": "string"
+        },
+        "type": {
+          "description": "type indicates which kind of seccomp profile will be applied. Valid options are:\n\nLocalhost - a profile defined in a file on the node should be used. RuntimeDefault - the container runtime default profile should be used. Unconfined - no profile should be applied.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object",
+      "x-kubernetes-unions": [
+        {
+          "discriminator": "type",
+          "fields-to-discriminateBy": {
+            "localhostProfile": "LocalhostProfile"
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.Sysctl": {
+      "description": "Sysctl defines a kernel parameter to be set",
+      "properties": {
+        "name": {
+          "description": "Name of a property to set",
+          "type": "string"
+        },
+        "value": {
+          "description": "Value of a property to set",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "type": "object",
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.WindowsSecurityContextOptions": {
+      "description": "WindowsSecurityContextOptions contain Windows-specific options and credentials.",
+      "properties": {
+        "gmsaCredentialSpec": {
+          "description": "GMSACredentialSpec is where the GMSA admission webhook (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the GMSA credential spec named by the GMSACredentialSpecName field.",
+          "type": "string"
+        },
+        "gmsaCredentialSpecName": {
+          "description": "GMSACredentialSpecName is the name of the GMSA credential spec to use.",
+          "type": "string"
+        },
+        "hostProcess": {
+          "description": "HostProcess determines if a container should be run as a 'Host Process' container. All of a Pod's containers must have the same effective HostProcess value (it is not allowed to have a mix of HostProcess containers and non-HostProcess containers). In addition, if HostProcess is true then HostNetwork must also be set to true.",
+          "type": "boolean"
+        },
+        "runAsUserName": {
+          "description": "The UserName in Windows to run the entrypoint of the container process. Defaults to the user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.",
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.Capabilities": {
+      "description": "Adds and removes POSIX capabilities from running containers.",
+      "properties": {
+        "add": {
+          "description": "Added capabilities",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        },
+        "drop": {
+          "description": "Removed capabilities",
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.PodSecurityContext": {
+      "description": "PodSecurityContext holds pod-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.",
+      "properties": {
+        "appArmorProfile": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.AppArmorProfile",
+          "description": "appArmorProfile is the AppArmor options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "fsGroup": {
+          "description": "A special supplemental group that applies to all containers in a pod. Some volume types allow the Kubelet to change the ownership of that volume to be owned by the pod:\n\n1. The owning GID will be the FSGroup 2. The setgid bit is set (new files created in the volume will be owned by FSGroup) 3. The permission bits are OR'd with rw-rw----\n\nIf unset, the Kubelet will not modify the ownership and permissions of any volume. Note that this field cannot be set when spec.os.name is windows.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "fsGroupChangePolicy": {
+          "description": "fsGroupChangePolicy defines behavior of changing ownership and permission of the volume before being exposed inside Pod. This field will only apply to volume types which support fsGroup based ownership(and permissions). It will have no effect on ephemeral volume types such as: secret, configmaps and emptydir. Valid values are \"OnRootMismatch\" and \"Always\". If not specified, \"Always\" is used. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "string"
+        },
+        "runAsGroup": {
+          "description": "The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in SecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence for that container. Note that this field cannot be set when spec.os.name is windows.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "runAsNonRoot": {
+          "description": "Indicates that the container must run as a non-root user. If true, the Kubelet will validate the image at runtime to ensure that it does not run as UID 0 (root) and fail to start the container if it does. If unset or false, no such validation will be performed. May also be set in SecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.",
+          "type": "boolean"
+        },
+        "runAsUser": {
+          "description": "The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in SecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence for that container. Note that this field cannot be set when spec.os.name is windows.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "seLinuxOptions": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.SELinuxOptions",
+          "description": "The SELinux context to be applied to all containers. If unspecified, the container runtime will allocate a random SELinux context for each container.  May also be set in SecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence for that container. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "seccompProfile": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.SeccompProfile",
+          "description": "The seccomp options to use by the containers in this pod. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "supplementalGroups": {
+          "description": "A list of groups applied to the first process run in each container, in addition to the container's primary GID and fsGroup (if specified).  If the SupplementalGroupsPolicy feature is enabled, the supplementalGroupsPolicy field determines whether these are in addition to or instead of any group memberships defined in the container image. If unspecified, no additional groups are added, though group memberships defined in the container image may still be used, depending on the supplementalGroupsPolicy field. Note that this field cannot be set when spec.os.name is windows.",
+          "items": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        },
+        "supplementalGroupsPolicy": {
+          "description": "Defines how supplemental groups of the first container processes are calculated. Valid values are \"Merge\" and \"Strict\". If not specified, \"Merge\" is used. (Alpha) Using the field requires the SupplementalGroupsPolicy feature gate to be enabled and the container runtime must implement support for this feature. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "string"
+        },
+        "sysctls": {
+          "description": "Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported sysctls (by the container runtime) might fail to launch. Note that this field cannot be set when spec.os.name is windows.",
+          "items": {
+            "$ref": "#/definitions/io.k8s.api.core.v1.Sysctl"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "atomic"
+        },
+        "windowsOptions": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.WindowsSecurityContextOptions",
+          "description": "The Windows specific settings applied to all containers. If unspecified, the options within a container's SecurityContext will be used. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is linux."
+        }
+      },
+      "type": "object",
+      "additionalProperties": false
+    },
+    "io.k8s.api.core.v1.SecurityContext": {
+      "description": "SecurityContext holds security configuration that will be applied to a container. Some fields are present in both SecurityContext and PodSecurityContext.  When both are set, the values in SecurityContext take precedence.",
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "description": "AllowPrivilegeEscalation controls whether a process can gain more privileges than its parent process. This bool directly controls if the no_new_privs flag will be set on the container process. AllowPrivilegeEscalation is true always when the container is: 1) run as Privileged 2) has CAP_SYS_ADMIN Note that this field cannot be set when spec.os.name is windows.",
+          "type": "boolean"
+        },
+        "appArmorProfile": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.AppArmorProfile",
+          "description": "appArmorProfile is the AppArmor options to use by this container. If set, this profile overrides the pod's appArmorProfile. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "capabilities": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.Capabilities",
+          "description": "The capabilities to add/drop when running containers. Defaults to the default set of capabilities granted by the container runtime. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "privileged": {
+          "description": "Run container in privileged mode. Processes in privileged containers are essentially equivalent to root on the host. Defaults to false. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "boolean"
+        },
+        "procMount": {
+          "description": "procMount denotes the type of proc mount to use for the containers. The default value is Default which uses the container runtime defaults for readonly paths and masked paths. This requires the ProcMountType feature flag to be enabled. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "string"
+        },
+        "readOnlyRootFilesystem": {
+          "description": "Whether this container has a read-only root filesystem. Default is false. Note that this field cannot be set when spec.os.name is windows.",
+          "type": "boolean"
+        },
+        "runAsGroup": {
+          "description": "The GID to run the entrypoint of the container process. Uses runtime default if unset. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "runAsNonRoot": {
+          "description": "Indicates that the container must run as a non-root user. If true, the Kubelet will validate the image at runtime to ensure that it does not run as UID 0 (root) and fail to start the container if it does. If unset or false, no such validation will be performed. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.",
+          "type": "boolean"
+        },
+        "runAsUser": {
+          "description": "The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows.",
+          "format": "int64",
+          "type": "integer"
+        },
+        "seLinuxOptions": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.SELinuxOptions",
+          "description": "The SELinux context to be applied to the container. If unspecified, the container runtime will allocate a random SELinux context for each container.  May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "seccompProfile": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.SeccompProfile",
+          "description": "The seccomp options to use by this container. If seccomp options are provided at both the pod & container level, the container options override the pod options. Note that this field cannot be set when spec.os.name is windows."
+        },
+        "windowsOptions": {
+          "$ref": "#/definitions/io.k8s.api.core.v1.WindowsSecurityContextOptions",
+          "description": "The Windows specific settings applied to all containers. If unspecified, the options from the PodSecurityContext will be used. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence. Note that this field cannot be set when spec.os.name is linux."
+        }
+      },
+      "type": "object",
+      "additionalProperties": false
+    },
     "io.k8s.apimachinery.pkg.api.resource.Quantity": {
       "oneOf": [
         {
-         "type": "string"
+          "type": "string"
         },
         {
-         "type": "number"
+          "type": "number"
         }
       ]
     },
@@ -23,18 +287,18 @@
           "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
           "type": "object"
         },
-         "requests": {
-           "additionalProperties": {
-             "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
-            },
-            "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
-            "type": "object"
-         }
+        "requests": {
+          "additionalProperties": {
+            "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+          },
+          "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. Requests cannot exceed Limits. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "type": "object"
+        }
       },
       "type": "object",
       "additionalProperties": false
     }
-   },
+  },
   "properties": {
     "image": {
       "type": "object",
@@ -89,7 +353,10 @@
       "default": 1
     },
     "priorityClassName": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Priority class name for hive metastore pod.",
       "default": null
     },
@@ -124,63 +391,30 @@
       "additionalProperties": {
         "type": "string"
       },
-        "default": {}
+      "default": {}
     },
     "podSecurityContext": {
       "type": "object",
       "description": "Pod-level security context for the Hive Metastore Pod.",
+      "$ref": "#/definitions/io.k8s.api.core.v1.PodSecurityContext",
       "default": {}
     },
     "securityContext": {
       "type": "object",
       "description": "Container-level security context for the Hive Metastore Pod.",
-      "properties": {
+      "$ref": "#/definitions/io.k8s.api.core.v1.SecurityContext",
+      "default": {
+        "allowPrivilegeEscalation": false,
+        "readOnlyRootFilesystem": true,
+        "runAsNonRoot": true,
+        "runAsUser": 10002,
         "capabilities": {
-          "type": "object",
-          "description": "Linux capabilities configuration.",
-          "additionalProperties": false,
-          "properties": {
-            "drop": {
-              "type": "array",
-              "description": "Capabilities to drop from the container.",
-              "default": ["ALL"],
-              "items": {
-                "type": "string"
-              }
-            }
-          }
+          "drop": [
+            "ALL"
+          ]
         },
         "seccompProfile": {
-          "type": "object",
-          "description": "Seccomp profile configuration for the container.",
-          "additionalProperties": false,
-          "properties": {
-            "type": {
-              "type": "string",
-              "description": "Seccomp profile type.",
-              "default": "RuntimeDefault"
-            }
-          }
-        },
-        "allowPrivilegeEscalation": {
-          "type": "boolean",
-          "description": "Whether the container can gain more privileges than its parent process.",
-          "default": false
-        },
-        "readOnlyRootFilesystem": {
-          "type": "boolean",
-          "description": "Whether the container filesystem should be mounted read-only.",
-          "default": true
-        },
-        "runAsNonRoot": {
-          "type": "boolean",
-          "description": "Whether the container should run as a non-root user.",
-          "default": true
-        },
-        "runAsUser": {
-          "type": "integer",
-          "description": "All processes in containers that run with the specified user.",
-          "default": 10002
+          "type": "RuntimeDefault"
         }
       }
     },
@@ -278,7 +512,10 @@
               "default": "hive-metastore-cm-cert"
             },
             "clusterIssuerName": {
-              "type": ["string", "null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "description": "The name of the issuer to create a certificate for a TLS operation.",
               "default": null
             },
@@ -377,7 +614,7 @@
       "properties": {
         "resources": {
           "$ref": "#/definitions/io.k8s.api.core.v1.ResourceRequirements",
-          "description": "Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "description": "Compute Resources required by hive-metastore container. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
           "default": {
             "requests": {
               "cpu": "700m",
@@ -387,14 +624,14 @@
               "cpu": "500m",
               "memory": "256Mi"
             }
-           }
+          }
         }
       }
     },
     "livenessProbe": {
       "type": "object",
       "description": "Liveness probe configuration for the Hive Metastore container.",
-      "default" : {}
+      "default": {}
     },
     "readinessProbe": {
       "type": "object",
@@ -410,7 +647,6 @@
       "type": "array",
       "description": "This parameter allows you to specify the tolerance to special conditions on cluster nodes.",
       "default": []
-
     },
     "affinity": {
       "type": "object",
@@ -443,7 +679,10 @@
           "default": false
         },
         "priorityClassName": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Priority class name for init job.",
           "default": null
         },
@@ -461,7 +700,7 @@
         },
         "resources": {
           "$ref": "#/definitions/io.k8s.api.core.v1.ResourceRequirements",
-          "description": "Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "description": "Compute Resources required by hive init job container. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
           "default": {
             "requests": {
               "cpu": "500m",
@@ -471,8 +710,8 @@
               "cpu": "300m",
               "memory": "300Mi"
             }
-           }
-         }
+          }
+        }
       }
     },
     "s3InitJob": {
@@ -496,7 +735,10 @@
           "default": false
         },
         "priorityClassName": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Priority class name for init job",
           "default": null
         },
@@ -507,14 +749,14 @@
             "helm.sh/hook": "pre-install,pre-upgrade",
             "helm.sh/hook-delete-policy": "before-hook-creation",
             "helm.sh/hook-weight": "-10"
-          },          
+          },
           "additionalProperties": {
             "type": "string"
           }
         },
         "resources": {
           "$ref": "#/definitions/io.k8s.api.core.v1.ResourceRequirements",
-          "description": "Compute Resources required by this container. Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+          "description": "Compute Resources required by s3 init job container. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
           "default": {
             "requests": {
               "cpu": "50m",
@@ -524,7 +766,7 @@
               "cpu": "50m",
               "memory": "64Mi"
             }
-           }
+          }
         }
       }
     },
@@ -683,7 +925,10 @@
       "type": "string",
       "description": "The Log4j2 configuration. The metastore logging level is set by the property.metastore.log.level property.",
       "default": "see the values.yaml file"
+    },
+    "PAAS_PLATFORM": {
+      "type": "string",
+      "description": "The PaaS platform where Hive Metastore is being deployed to."
     }
   }
-
 }
