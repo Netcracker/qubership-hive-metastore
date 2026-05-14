@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "description": "Schema for hivemetastore Helm chart values.",
+  "description": "Schema for the Hive Metastore Helm chart values. Some Kubernetes object definitions are derived from https://github.com/yannh/kubernetes-json-schema.",
   "definitions": {
     "io.k8s.api.core.v1.SELinuxOptions": {
       "description": "SELinuxOptions are the labels to be applied to the container",
