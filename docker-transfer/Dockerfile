@@ -5,8 +5,10 @@ WORKDIR /app
 COPY docker-transfer/sync.py /app/sync.py
 COPY chart /app/chart
 COPY docs /app/docs
+COPY docker-transfer/validation.py /app/validation.py
 
-RUN pip install --no-cache-dir ruamel.yaml && \
+RUN pip install --no-cache-dir ruamel.yaml pyyaml && \
+    python validation.py chart/helm/hivemetastore/values.yaml chart/helm/hivemetastore/values.schema.json && \
     python sync.py chart/helm/hivemetastore/release-images.yaml chart/helm/hivemetastore/values.yaml
 
 FROM scratch
