@@ -22,7 +22,9 @@ The following topics are covered in this chapter:
     * [AWS V4 Signature Configuration](#aws-v4-signature-configuration) 
     * [TLS](#tls)
 * [Installation](#installation)
-  * [Replace Secret to ENV Mapping with File Based Secret Mounts](#replace-secret-to-env-mapping-with-file-based-secret-mounts)
+  * [Security Hardening](#security-hardening)
+    * [Read Only Root Filesystem](#read-only-root-filesystem)
+    * [Replace Secret to ENV Mapping with File Based Secret Mounts](#replace-secret-to-env-mapping-with-file-based-secret-mounts)
   * [Manual Deployment](#manual-deployment)
 * [On-Prem](#on-prem)
     * [HA Scheme](#ha-scheme)
@@ -543,7 +545,15 @@ Configuration string format: <provider1[:prvdr2[:reg[:srv]]]>
 
 TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
 
-### Security Hardening: Read-Only Root Filesystem
+
+
+# Installation
+
+The installation procedure is specified in the below sub-sections.
+
+## Security Hardening
+
+### Read Only Root Filesystem
 
 To improve the security posture of the application, the deployment is configured with a read-only root filesystem. This prevents the container process from writing to any location on the disk except for specifically designated volumes.
 The following settings are applied:
@@ -559,11 +569,7 @@ securityContext:
  | common-space | /tmp | Provides a writable area for temporary files, logs, and general OS-level buffers. |
  | java-cacerts-dir| /java-security | Used specifically for managing Java truststores and security certificates at runtime. |
 
-# Installation
-
-The installation procedure is specified in the below sub-sections.
-
-## Replace Secret to ENV Mapping with File Based Secret Mounts
+### Replace Secret to ENV Mapping with File Based Secret Mounts
 To improve the application security, it is recommended to replace the secret-to-environment variable mapping with file-based secret mounts for handling sensitive data.
 Sensitive parameters are now read from the mounted secret files using automated secret volume mounts.
 
