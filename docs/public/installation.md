@@ -22,6 +22,7 @@ The following topics are covered in this chapter:
     * [AWS V4 Signature Configuration](#aws-v4-signature-configuration) 
     * [TLS](#tls)
 * [Installation](#installation)
+  * [Replace Secret to ENV Mapping with File Based Secret Mounts](#replace-secret-to-env-mapping-with-file-based-secret-mounts)
   * [Manual Deployment](#manual-deployment)
 * [On-Prem](#on-prem)
     * [HA Scheme](#ha-scheme)
@@ -561,6 +562,46 @@ securityContext:
 # Installation
 
 The installation procedure is specified in the below sub-sections.
+
+## Replace Secret to ENV Mapping with File Based Secret Mounts
+To improve the application security, it is recommended to replace the secret-to-environment variable mapping with file-based secret mounts for handling sensitive data.
+Sensitive parameters are now read from the mounted secret files using automated secret volume mounts.
+
+The following configurations have been applied:
+#### Hive-metastore
+The hive-metastore deployment has been updated to consume credentials from the credentials-secret Kubernetes Secret via a mounted volume. The readiness probe reads the credentials from the mounted files when validating connectivity to the PostgreSQL metastore database
+```yaml
+# Read credentials from mounted secret files
+HIVE_USERNAME=$(cat /etc/credentials/hive_username)
+HIVE_PASSWORD=$(cat /etc/credentials/hive_password)
+
+volumeMounts:
+  - name: credentials-secret
+    mountPath: /etc/credentials
+    readOnly: true
+volumes:
+  - name: credentials-secret
+    secret:
+      secretName: {{ .Release.Name }}-credentials-secret
+    defaultMode: 0400
+```    
+#### S3-init-job
+The s3-init-job has been updated to read S3 credentials from the init-job-credentials-secret Kubernetes Secret via a mounted volume. The credentials are used to authenticate with the S3 endpoint during initialization.
+```yaml
+# Read S3 credentials from mounted secret files
+ACCESS_KEY=$(cat /etc/credentials/s3_accessKey)
+SECRET_KEY=$(cat /etc/credentials/s3_secretKey)
+volumes:
+  - name: init-job-credentials-secret
+    secret:
+      secretName: {{ .Release.Name }}-init-job-credentials
+    defaultMode: 0400  
+volumeMounts:
+  - name: init-job-credentials-secret
+    mountPath: /etc/credentials
+    readOnly: true
+```    
+    
 
 ## Manual Deployment
 

@@ -510,7 +510,9 @@
       "type": "object",
       "description": "Pod-level security context for the Hive Metastore Pod.",
       "$ref": "#/definitions/io.k8s.api.core.v1.PodSecurityContext",
-      "default": {}
+      "default": {
+        "fsGroup": 10002
+      }
     },
     "securityContext": {
       "type": "object",
