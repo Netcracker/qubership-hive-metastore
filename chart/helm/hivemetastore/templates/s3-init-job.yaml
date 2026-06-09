@@ -33,6 +33,9 @@ spec:
       securityContext:
         {{- include "hive-metastore.podSecurityContext" . | nindent 8 }}
       volumes:
+        - name: init-job-credentials-secret
+          secret:
+            secretName: {{ .Release.Name }}-init-job-credentials
         {{- if .Values.extraVolumes }}
           {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
         {{- end }}
@@ -53,17 +56,10 @@ spec:
           {{- if .Values.env }}
           {{- toYaml .Values.env | nindent 10}}
           {{- end }}
-          - name: "ACCESS_KEY"
-            valueFrom:
-              secretKeyRef:
-                key: s3_accessKey
-                name: {{ .Release.Name }}-init-job-credentials
-          - name: "SECRET_KEY"
-            valueFrom:
-              secretKeyRef:
-                key: s3_secretKey
-                name: {{ .Release.Name }}-init-job-credentials
         volumeMounts:
+          - name: init-job-credentials-secret
+            mountPath: /etc/credentials
+            readOnly: true
           {{- if .Values.extraVolumeMounts }}
             {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 12 }}
           {{- end }}
@@ -76,6 +72,8 @@ spec:
         args:
           - "-c"
           - |-
+            ACCESS_KEY=$(cat /etc/credentials/s3_accessKey)
+            SECRET_KEY=$(cat /etc/credentials/s3_secretKey)
             s3_url="{{ include "s3.endpoint" . }}"
             s3_uri="{{ include  "s3.warehouseDir" . }}"
             aws_sigv4="{{ .Values.s3InitJob.awsSigV4 }}"
@@ -107,7 +105,7 @@ spec:
             head_bucket() {
               response=$(curl -v -s -I ${curlOpts} --head ${s3_url}/${bucket_name} \
                               -H "Date: $(date --utc +'%Y%m%dT%H%M%SZ')" \
-                              --user ${ACCESS_KEY}:${SECRET_KEY} \
+                              --user "${ACCESS_KEY}:${SECRET_KEY}" \
                               --aws-sigv4 "${aws_sigv4}" 2>&1)
 
               echo "${response}"
@@ -117,7 +115,7 @@ spec:
               response=$(curl -v -s -I ${curlOpts} -X PUT \
                               -H "Date: $(date --utc +'%Y%m%dT%H%M%SZ')" \
                               -H "Content-Length: 0" \
-                              --user ${ACCESS_KEY}:${SECRET_KEY} \
+                              --user "${ACCESS_KEY}:${SECRET_KEY}" \
                               --aws-sigv4 "${aws_sigv4}" \
                               ${s3_url}/${bucket_name} 2>&1)
 
@@ -137,7 +135,7 @@ spec:
               response=$(curl -v -s -I ${curlOpts} -X PUT \
                               -H "Date: $(date --utc +'%Y%m%dT%H%M%SZ')" \
                               -H "Content-Type: text/plain" \
-                              --user ${ACCESS_KEY}:${SECRET_KEY} \
+                              --user "${ACCESS_KEY}:${SECRET_KEY}" \
                               --aws-sigv4 "${aws_sigv4}" \
                               ${s3_url}/${s3_path} 2>&1)
 
