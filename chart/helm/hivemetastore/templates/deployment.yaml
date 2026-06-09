@@ -60,26 +60,6 @@ spec:
             {{- end }}
             - name: "HIVE_SERVICE_PORT"
               value: "{{ .Values.service.port }}"
-            - name: "PG_USERNAME"
-              valueFrom:
-                secretKeyRef:
-                  key: pg_username
-                  name: {{ .Release.Name }}-credentials-secret
-            - name: "PG_PASSWORD"
-              valueFrom:
-                secretKeyRef:
-                  key: pg_password
-                  name: {{ .Release.Name }}-credentials-secret
-            - name: "HIVE_USERNAME"
-              valueFrom:
-                secretKeyRef:
-                  key: hive_username
-                  name: {{ .Release.Name }}-credentials-secret
-            - name: "HIVE_PASSWORD"
-              valueFrom:
-                secretKeyRef:
-                  key: hive_password
-                  name: {{ .Release.Name }}-credentials-secret
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -88,6 +68,9 @@ spec:
               containerPort: 9028
               protocol: TCP
           volumeMounts:
+            - name: credentials-secret
+              mountPath: /etc/credentials
+              readOnly: true
             - name: common-space     
               mountPath: /tmp   
             - name: java-cacerts-dir     
@@ -122,7 +105,9 @@ spec:
                 - /bin/sh
                 - -c
                 - |-
-                  /opt/hive-metastore/bin/schematool  -verbose -info -dbType postgres -userName $PG_USERNAME -passWord $PG_PASSWORD -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ include "postgres.hive.db" . }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName $HIVE_USERNAME -passWord $HIVE_PASSWORD
+                  HIVE_USERNAME=$(cat /etc/credentials/hive_username)
+                  HIVE_PASSWORD=$(cat /etc/credentials/hive_password)
+                  /opt/hive-metastore/bin/schematool  -verbose -info -dbType postgres -url jdbc:postgresql://{{ include "postgres.host" . }}:{{ include "postgres.port" . }}/{{ include "postgres.hive.db" . }} {{ if and .Values.tls.enabled .Values.postgres.jdbcParams }} -dbOpts {{ .Values.postgres.jdbcParams }} {{ end }} -driver {{ .Values.postgres.driver }} -userName "$HIVE_USERNAME" -passWord "$HIVE_PASSWORD"
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 15 }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 15 }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 30 }}
@@ -139,6 +124,10 @@ spec:
           resources:
             {{- toYaml .Values.hiveMetastore.resources | nindent 12 }}
       volumes:
+        - name: credentials-secret
+          secret:
+            secretName: {{ .Release.Name }}-credentials-secret
+          defaultMode: 0400  
         - name: common-space     
           emptyDir: {}   
         - name: java-cacerts-dir     
