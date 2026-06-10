@@ -36,7 +36,7 @@ spec:
         - name: init-job-credentials-secret
           secret:
             secretName: {{ .Release.Name }}-init-job-credentials
-          defaultMode: 0400  
+            defaultMode: 0400  
         {{- if .Values.extraVolumes }}
           {{- tpl (toYaml .Values.extraVolumes) . | nindent 8 }}
         {{- end }}

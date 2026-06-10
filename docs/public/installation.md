@@ -589,7 +589,7 @@ volumes:
   - name: credentials-secret
     secret:
       secretName: {{ .Release.Name }}-credentials-secret
-    defaultMode: 0400
+      defaultMode: 0400
 ```    
 #### S3-init-job
 The s3-init-job has been updated to read S3 credentials from the init-job-credentials-secret Kubernetes Secret via a mounted volume. The credentials are used to authenticate with the S3 endpoint during initialization.
@@ -601,7 +601,7 @@ volumes:
   - name: init-job-credentials-secret
     secret:
       secretName: {{ .Release.Name }}-init-job-credentials
-    defaultMode: 0400  
+      defaultMode: 0400  
 volumeMounts:
   - name: init-job-credentials-secret
     mountPath: /etc/credentials
