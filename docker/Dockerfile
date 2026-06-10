@@ -14,7 +14,7 @@
 
 FROM alpine:latest AS unpacker
 
-ENV HADOOP_VERSION=3.4.2
+ENV HADOOP_VERSION=3.4.3
 ENV HIVE_VERSION=4.2.0
 ENV MAVEN_REPO=https://repo1.maven.org/maven2
 
@@ -30,14 +30,14 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
         --exclude="*/jdiff" --exclude="*/sources" --exclude="*tests.jar" --exclude="*/webapps" && \
     curl -k https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
     curl -k -L $MAVEN_REPO/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
-    mkdir -p /opt/postgresql-42.7.7 && \
-    curl -k -L $MAVEN_REPO/org/postgresql/postgresql/42.7.7/postgresql-42.7.7.jar --output /opt/postgresql-42.7.7/postgresql-42.7.7.jar && \
+    mkdir -p /opt/postgresql-42.7.11 && \
+    curl -k -L $MAVEN_REPO/org/postgresql/postgresql/42.7.11/postgresql-42.7.11.jar --output /opt/postgresql-42.7.11/postgresql-42.7.11.jar && \
     mkdir -p /opt/jetty-server-9.4.57.v20241219 && \
     chmod -R 755 /opt && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/hadoop/share/hadoop/tools/lib/bundle* /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/postgresql-42.7.7/postgresql-42.7.7.jar /opt/hive-metastore/lib/ && \
+    ln -s /opt/postgresql-42.7.11/postgresql-42.7.11.jar /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/postgresql-42.7.11/postgresql-42.7.11.jar /opt/hive-metastore/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
 

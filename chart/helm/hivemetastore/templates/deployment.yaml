@@ -127,7 +127,7 @@ spec:
         - name: credentials-secret
           secret:
             secretName: {{ .Release.Name }}-credentials-secret
-          defaultMode: 0400  
+            defaultMode: 0400  
         - name: common-space     
           emptyDir: {}   
         - name: java-cacerts-dir     
