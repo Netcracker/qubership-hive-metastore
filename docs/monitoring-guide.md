@@ -9,7 +9,7 @@ The following sections are covered in this chapter:
 
 This section describes the Qubership Hive-Metastore monitoring dashboard.
 
-![Dashboard Variables](/docs/internal/images/hive_metastore_dashboard_variables.png)
+![Dashboard Variables](/docs/images/hive_metastore_dashboard_variables.png)
 
 To access the dashboard, navigate to the Grafana server and log in using the provided credentials. Select the Hive-Metastore dashboard and select the `namespace`. Select the operator's `pod` and select the time range.
 
@@ -29,7 +29,7 @@ The Metrix covers the following:
 
 This section describes the Qubership Hive-Metastore overall state.
 
-![Hive-Metastore Overview](/docs/internal/images/hive_metastore_overview.png)
+![Hive-Metastore Overview](/docs/images/hive_metastore_overview.png)
 
 #### Hive-Metastore Status
 
@@ -62,19 +62,19 @@ The possible values are:
 
 This displays the CPU consumption in Qubership Hive-Metastore pods based on the metrics collected from the docker.
 
-![CPU](/docs/internal/images/hive_metastore_cpu.png)
+![CPU](/docs/images/hive_metastore_cpu.png)
 
 ### Memory Usage
 
 This displays the memory consumption in Qubership Hive-Metastore pods based on the metrics collected from the docker.
 
-![alt text](/docs/internal/images/hive_metastore_memory.png "Memory")
+![alt text](/docs/images/hive_metastore_memory.png "Memory")
 
 ### JVM
 
 This section describes the Qubership Hive-Metastore JVM state.
 
-![Hive-Metastore JVM](/docs/internal/images/hive_metastore_JVM.png)
+![Hive-Metastore JVM](/docs/images/hive_metastore_JVM.png)
 
 #### JVM Heap Usage
 
@@ -92,13 +92,13 @@ This section displays the garbage collection time rate per second by Qubership H
 
 This section displays the disk usage for Qubership Hive-Metastore pods.
 
-![Disk](/docs/internal/images/hive_metastore_space.png)
+![Disk](/docs/images/hive_metastore_space.png)
 
 ### Network
 
 This section displays the network information.
 
-![Network](/docs/internal/images/hive-metastore_network.png)
+![Network](/docs/images/hive-metastore_network.png)
 
 ### Open Connection
 
@@ -120,7 +120,7 @@ This section displays the dropped packets for the pod.
 
 This section describes the Qubership Hive-Metastore data state.
 
-![Hive-Metastore data](/docs/internal/images/hive_metastore_data.png)
+![Hive-Metastore data](/docs/images/hive_metastore_data.png)
 
 #### DB
 

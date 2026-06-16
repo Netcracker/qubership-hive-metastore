@@ -30,13 +30,13 @@ In this mode, 2 hive-metastore hearths are created, which provide backup operati
 
 Scheme of work:
 
-![Hive-metastore HA Scheme](/docs/internal/images/hive-metastore-ha-scheme.png)
+![Hive-metastore HA Scheme](/docs/images/hive-metastore-ha-scheme.png)
 
 **Situations**: There are situations when one of the hive-metastore pods becomes unavailable. In such a case, the service works as shown in the below image.
 
 Scheme of work:
 
-![Hive-metastore HA scheme - 1 Pod Disabled](/docs/internal/images/hive-metastore-ha-scheme-1-pod-off.png)
+![Hive-metastore HA scheme - 1 Pod Disabled](/docs/images/hive-metastore-ha-scheme-1-pod-off.png)
 
 ## Non-HA Deployment Scheme
 
@@ -44,4 +44,4 @@ Hive-metastore in the non-HA mode has only one replica of each component.
 
 Scheme of work:
 
-![Hive-metastore non-HA Scheme](/docs/internal/images/hive-metastore-non-ha-scheme.png)
+![Hive-metastore non-HA Scheme](/docs/images/hive-metastore-non-ha-scheme.png)
