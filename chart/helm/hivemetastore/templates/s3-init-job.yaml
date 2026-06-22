@@ -62,12 +62,12 @@ spec:
             mountPath: /etc/credentials
             readOnly: true
           {{- if .Values.extraVolumeMounts }}
-            {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 12 }}
+            {{- tpl (toYaml .Values.extraVolumeMounts) . | nindent 10 }}
           {{- end }}
           {{- range .Values.secretMounts}}
-            - name: {{.name}}
-              mountPath: {{.path}}
-              subPath: {{.subPath}}
+          - name: {{.name}}
+            mountPath: {{.path}}
+            subPath: {{.subPath}}
           {{- end }}
 
         args:
