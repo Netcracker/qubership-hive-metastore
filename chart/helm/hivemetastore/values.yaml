@@ -194,7 +194,7 @@ hiveInitJob:
 
 s3InitJob:
   enabled: false
-  awsSigV4: "aws:minio:s3:s3"
+  awsSigV4: "aws:sigv4:us-east-2:s3"
   disableTLSValidation: false
   priorityClassName: ~
   initAnnotations:
