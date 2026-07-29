@@ -84,17 +84,24 @@ The best practices and recommendations are given in the below sub-sections.
 
 The hardware requirements are specified below.
 
+**JVM Heap Size Configuration**: The Hive Metastore JVM heap size can be configured using the HADOOP_HEAPSIZE environment variable. The value is specified in MB. For example, setting HADOOP_HEAPSIZE to 768 configures the JVM heap size to 768 MB
+```yaml
+env:
+  - name: HADOOP_HEAPSIZE
+    value: "768"
+```
+
 ### Small
 
 `Small` profile specifies the resources that are enough to start hive-metastore.
 
 The profile resources are specified below:
 
-|   Container    | CPU Limit | Memory Limit | Number of Containers |
-|:--------------:|:---------:|:------------:|:--------------------:|
-| Hive-Metastore |   700m    |      1G      |          1           |
-| Hive Init Job  |   500m    |      512Mi   |          1           |
-| Hive S3 Job    |    50m    |     64Mi     |          1           |
+|   Container    | CPU Limit | Memory Limit | Number of Containers | JVM Heap (Xmx) | 
+|:--------------:|:---------:|:------------:|:--------------------:|:---------------|
+| Hive-Metastore |   700m    |      1G      |          1           |   256Mi        |
+| Hive Init Job  |   500m    |      512Mi   |          1           |   256Mi        |
+| Hive S3 Job    |    50m    |     64Mi     |          1           |   256Mi        |
 
 **Note**: The above resources are required for starting, not for working under load. For production, the resources should be increased.
 
@@ -103,11 +110,11 @@ The profile resources are specified below:
 `Medium` profile specifies the approximate resources that are enough to run hive-metastore for dev purposes.
 The profile resources are specified below:
 
-|   Container    | CPU Limit | Memory Limit | Number of Containers |
-|:--------------:|:---------:|:------------:|:--------------------:|
-| Hive-Metastore |     1     |      2G      |          1           |
-| Hive Init Job  |   500m    |      512Mi   |          1           |
-| Hive S3 Job    |    50m    |     64Mi     |          1           |
+|   Container    | CPU Limit | Memory Limit | Number of Containers | JVM Heap (Xmx) |
+|:--------------:|:---------:|:------------:|:--------------------:|:---------------|
+| Hive-Metastore |     1     |      2G      |          1           |   512Mi        |
+| Hive Init Job  |   500m    |      512Mi   |          1           |   256Mi        |
+| Hive S3 Job    |    50m    |     64Mi     |          1           |   256Mi        |
 
 **Note**: The above resources are enough for development purposes, not for working under production load. For production, the resources should be increased.
 
@@ -116,11 +123,11 @@ The profile resources are specified below:
 `Large` profile specifies the approximate resources that are enough to run hive-metastore for prod purposes.
 The profile resources are specified below:
 
-|   Container   | CPU Limit | Memory Limit | Number of Containers |
-|:-------------:|:---------:|:------------:|:--------------------:|
-|Hive-Metastore |     2     |      4G      |          2           |
-| Hive Init Job |   500m    |    512Mi     |          1           |
-| Hive S3 Job   |    50m    |     64Mi     |          1           |
+|   Container   | CPU Limit | Memory Limit | Number of Containers | JVM Heap (Xmx) |
+|:-------------:|:---------:|:------------:|:--------------------:|:---------------|
+|Hive-Metastore |     2     |      4G      |          2           |   750Mi        |
+| Hive Init Job |   500m    |    512Mi     |          1           |   256Mi        |
+| Hive S3 Job   |    50m    |     64Mi     |          1           |   256Mi        |
 
 # Parameters
 
