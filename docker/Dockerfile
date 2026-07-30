@@ -21,6 +21,7 @@ ENV MAVEN_REPO=https://repo1.maven.org/maven2
 
 RUN apk add --no-cache curl tar
 RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
+    curl -k -L $MAVEN_REPO/software/amazon/awssdk/bundle/2.35.5/bundle-2.35.5.jar --output /opt/hadoop/bundle-2.35.5.jar && \
     curl -k -L https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz | \
     tar -xvz --strip-components=1 -C /opt/hadoop \
         --exclude="lib/native" \
@@ -34,8 +35,7 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     curl -k -L $MAVEN_REPO/org/postgresql/postgresql/42.7.11/postgresql-42.7.11.jar --output /opt/postgresql-42.7.11/postgresql-42.7.11.jar && \
     mkdir -p /opt/jetty-server-9.4.57.v20241219 && \
     chmod -R 755 /opt && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/bundle* /opt/hadoop/share/hadoop/common/lib/ && \
+    ln -s /opt/hadoop/bundle-2.35.5.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.11/postgresql-42.7.11.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.11/postgresql-42.7.11.jar /opt/hive-metastore/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
