@@ -28,14 +28,13 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
         --exclude="share/hadoop/client" \
         --exclude="share/hadoop/yarn" \
         --exclude="*/jdiff" --exclude="*/sources" --exclude="*tests.jar" --exclude="*/webapps" && \
+    curl -k -L $MAVEN_REPO/software/amazon/awssdk/bundle/2.49.5/bundle-2.49.5.jar --output /opt/hadoop/share/hadoop/common/lib/bundle-2.49.5.jar && \
     curl -k https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
     curl -k -L $MAVEN_REPO/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
     mkdir -p /opt/postgresql-42.7.11 && \
     curl -k -L $MAVEN_REPO/org/postgresql/postgresql/42.7.11/postgresql-42.7.11.jar --output /opt/postgresql-42.7.11/postgresql-42.7.11.jar && \
     mkdir -p /opt/jetty-server-9.4.57.v20241219 && \
     chmod -R 755 /opt && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/hadoop-aws* /opt/hadoop/share/hadoop/common/lib/ && \
-    ln -s /opt/hadoop/share/hadoop/tools/lib/bundle* /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.11/postgresql-42.7.11.jar /opt/hadoop/share/hadoop/common/lib/ && \
     ln -s /opt/postgresql-42.7.11/postgresql-42.7.11.jar /opt/hive-metastore/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
