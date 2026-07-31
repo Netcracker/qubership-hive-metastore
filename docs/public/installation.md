@@ -101,7 +101,7 @@ The profile resources are specified below:
 |:--------------:|:---------:|:------------:|:--------------------:|:---------------|
 | Hive-Metastore |   700m    |      1G      |          1           |   256Mi        |
 | Hive Init Job  |   500m    |      512Mi   |          1           |   256Mi        |
-| Hive S3 Job    |    50m    |     64Mi     |          1           |   256Mi        |
+
 
 **Note**: The above resources are required for starting, not for working under load. For production, the resources should be increased.
 
@@ -114,7 +114,7 @@ The profile resources are specified below:
 |:--------------:|:---------:|:------------:|:--------------------:|:---------------|
 | Hive-Metastore |     1     |      2G      |          1           |   512Mi        |
 | Hive Init Job  |   500m    |      512Mi   |          1           |   256Mi        |
-| Hive S3 Job    |    50m    |     64Mi     |          1           |   256Mi        |
+
 
 **Note**: The above resources are enough for development purposes, not for working under production load. For production, the resources should be increased.
 
@@ -127,7 +127,7 @@ The profile resources are specified below:
 |:-------------:|:---------:|:------------:|:--------------------:|:---------------|
 |Hive-Metastore |     2     |      4G      |          2           |   750Mi        |
 | Hive Init Job |   500m    |    512Mi     |          1           |   256Mi        |
-| Hive S3 Job   |    50m    |     64Mi     |          1           |   256Mi        |
+
 
 # Parameters
 

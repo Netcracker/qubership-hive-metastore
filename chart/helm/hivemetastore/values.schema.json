@@ -523,6 +523,7 @@
         "readOnlyRootFilesystem": true,
         "runAsNonRoot": true,
         "runAsUser": 10002,
+        "runAsGroup": 10002,
         "capabilities": {
           "drop": [
             "ALL"
