@@ -41,6 +41,11 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
 
+# The shaded SeaweedFS Hadoop client bundles its own gRPC classes. Hive's grpc-*.jar files load
+# first and cause a NoSuchMethodError in ProtoUtils.marshaller when the metastore opens seaweedfs://
+# paths. Nothing on the metastore server path uses them.
+RUN rm -f /opt/hive-metastore/lib/grpc-*.jar
+
 FROM eclipse-temurin:21-jre-noble
 
 ENV HIVE_USER_NAME=metastore
