@@ -21,6 +21,7 @@ The following topics are covered in this chapter:
   * [S3 Initialization Job](#s3-initialization-job)
     * [AWS V4 Signature Configuration](#aws-v4-signature-configuration) 
     * [TLS](#tls)
+  * [SeaweedFS Storage](#seaweedfs-storage)
 * [Installation](#installation)
   * [Security Hardening](#security-hardening)
     * [Read Only Root Filesystem](#read-only-root-filesystem)
@@ -543,7 +544,27 @@ s3InitJob:
 Signature configuration string is set in `s3InitJob.awsSigV4` and is different for different S3 storages. 
 By default, `s3InitJob.awsSigV4: "aws:minio:s3:s3"` to work with S3 MinIO. If a different S3 storage is used, the signature configuration should be updated according the below instruction.
 
-### SeaweedFS Storage
+### AWS V4 Signature Configuration
+
+Configuration string format: <provider1[:prvdr2[:reg[:srv]]]>
+
+- The provider argument is a string that is used by the algorithm, when creating outgoing authentication headers.
+- The region argument is a string that points to a geographic area of a resources collection (region-code), when the region name is omitted from the endpoint.
+- The service argument is a string that points to a function provided by a cloud (service-code), when the service name is omitted from the endpoint.
+
+#### Examples
+
+* AWS S3 (typical): `aws:us-east-1:s3`
+* AWS S3 (default region fallback): `aws::s3`
+* MinIO (S3-compatible storage): `s3:s3:us-east-1:s3`
+
+**Note**: If the configuration values are unknown, it is possible to try using the string pattern `aws:sigv4:us-east-2:s3`  
+
+### TLS 
+
+TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
+
+## SeaweedFS Storage
 
 Hive Metastore can store its warehouse in SeaweedFS through the native `seaweedfs://` filesystem instead of the S3 API. The image includes the `seaweedfs-hadoop3-client` jar. The client talks to the SeaweedFS filer over gRPC (port `18888` by default).
 
@@ -586,7 +607,7 @@ metastoreConfigsecret:
 
 With a `seaweedfs://` warehouse, `s3InitJob` creates the directory through the filer HTTP API (`http://<host>:<port>`) and ignores `s3.endpoint`, `s3.accessKey`, `s3.secretKey`, and `s3InitJob.awsSigV4`. The job does nothing if the directory already exists.
 
-#### SeaweedFS Authentication
+### SeaweedFS Authentication
 
 The SeaweedFS client supports authentication, but it is not configured through `fs.seaweed.*` properties. The client reads a `security.toml` file from `./security.toml`, `~/.seaweedfs/security.toml`, or `/etc/seaweedfs/security.toml`, in that order, and supports:
 
@@ -599,28 +620,6 @@ To use it, mount a `security.toml` and the certificate files it references into 
 `s3InitJob` does not support these settings. It connects over plain `http` without credentials, so with an authenticated filer, create the warehouse directory manually and keep `s3InitJob` disabled.
 
 See the [SeaweedFS Hadoop client source](https://github.com/seaweedfs/seaweedfs/tree/master/other/java/client/src/main/java/seaweedfs/client) for details.
-
-### AWS V4 Signature Configuration
-
-Configuration string format: <provider1[:prvdr2[:reg[:srv]]]>
-
-- The provider argument is a string that is used by the algorithm, when creating outgoing authentication headers.
-- The region argument is a string that points to a geographic area of a resources collection (region-code), when the region name is omitted from the endpoint.
-- The service argument is a string that points to a function provided by a cloud (service-code), when the service name is omitted from the endpoint.
-
-#### Examples
-
-* AWS S3 (typical): `aws:us-east-1:s3`
-* AWS S3 (default region fallback): `aws::s3`
-* MinIO (S3-compatible storage): `s3:s3:us-east-1:s3`
-
-**Note**: If the configuration values are unknown, it is possible to try using the string pattern `aws:sigv4:us-east-2:s3`  
-
-### TLS 
-
-TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
-
-
 
 # Installation
 
