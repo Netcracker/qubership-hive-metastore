@@ -16,6 +16,7 @@ FROM alpine:latest AS unpacker
 
 ENV HADOOP_VERSION=3.4.3
 ENV HIVE_VERSION=4.2.1
+ENV SEAWEEDFS_VERSION=4.38
 ENV MAVEN_REPO=https://repo1.maven.org/maven2
 
 
@@ -29,6 +30,7 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
         --exclude="share/hadoop/yarn" \
         --exclude="*/jdiff" --exclude="*/sources" --exclude="*tests.jar" --exclude="*/webapps" && \
     curl -k -L $MAVEN_REPO/software/amazon/awssdk/bundle/2.54.1/bundle-2.54.1.jar --output /opt/hadoop/share/hadoop/common/lib/bundle-2.54.1.jar && \
+    curl -k -L $MAVEN_REPO/com/seaweedfs/seaweedfs-hadoop3-client/$SEAWEEDFS_VERSION/seaweedfs-hadoop3-client-$SEAWEEDFS_VERSION.jar --output /opt/hadoop/share/hadoop/common/lib/seaweedfs-hadoop3-client-$SEAWEEDFS_VERSION.jar && \
     curl -k https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz | tar xvz --strip-components=1 -C /opt/hive-metastore && \
     curl -k -L $MAVEN_REPO/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar --output /opt/hive-metastore/lib/jmx_prometheus_javaagent-1.0.1.jar && \
     mkdir -p /opt/postgresql-42.7.13 && \
@@ -38,6 +40,11 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     ln -s /opt/postgresql-42.7.13/postgresql-42.7.13.jar /opt/hive-metastore/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
+
+# The shaded SeaweedFS Hadoop client bundles its own gRPC classes. Hive's grpc-*.jar files load
+# first and cause a NoSuchMethodError in ProtoUtils.marshaller when the metastore opens seaweedfs://
+# paths. Nothing on the metastore server path uses them.
+RUN rm -f /opt/hive-metastore/lib/grpc-*.jar
 
 FROM eclipse-temurin:21-jre-noble
 

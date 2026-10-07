@@ -21,6 +21,7 @@ The following topics are covered in this chapter:
   * [S3 Initialization Job](#s3-initialization-job)
     * [AWS V4 Signature Configuration](#aws-v4-signature-configuration) 
     * [TLS](#tls)
+  * [SeaweedFS Storage](#seaweedfs-storage)
 * [Installation](#installation)
   * [Security Hardening](#security-hardening)
     * [Read Only Root Filesystem](#read-only-root-filesystem)
@@ -563,7 +564,62 @@ Configuration string format: <provider1[:prvdr2[:reg[:srv]]]>
 
 TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
 
+## SeaweedFS Storage
 
+Hive Metastore can store its warehouse in SeaweedFS through the native `seaweedfs://` filesystem instead of the S3 API. The image includes the `seaweedfs-hadoop3-client` jar. The client talks to the SeaweedFS filer over gRPC (port `18888` by default).
+
+The example below is a minimal configuration that works with a filer without authentication. If the filer requires authentication, additional configuration is needed. See [Authentication](#seaweedfs-authentication).
+
+Set the warehouse directory to a `seaweedfs://` URI and replace the S3 Hadoop properties with the SeaweedFS ones:
+
+```yaml
+s3:
+  warehouseDir: seaweedfs://seaweedfs-filer-external.seaweedfs:8888/hive/warehouse
+
+s3InitJob:
+  enabled: true
+
+metastoreConfigsecret:
+  coreSitePropertiesSecret: |
+    <configuration>
+      <property>
+        <name>fs.seaweedfs.impl</name>
+        <value>seaweed.hdfs.SeaweedFileSystem</value>
+      </property>
+      <property>
+        <name>fs.AbstractFileSystem.seaweedfs.impl</name>
+        <value>seaweed.hdfs.SeaweedAbstractFileSystem</value>
+      </property>
+      <property>
+        <name>fs.seaweed.filer.host</name>
+        <value>seaweedfs-filer-external.seaweedfs</value>
+      </property>
+      <property>
+        <name>fs.seaweed.filer.port</name>
+        <value>8888</value>
+      </property>
+      <property>
+        <name>fs.seaweed.filer.port.grpc</name>
+        <value>18888</value>
+      </property>
+    </configuration>
+```
+
+With a `seaweedfs://` warehouse, `s3InitJob` creates the directory through the filer HTTP API (`http://<host>:<port>`) and ignores `s3.endpoint`, `s3.accessKey`, `s3.secretKey`, and `s3InitJob.awsSigV4`. The job does nothing if the directory already exists.
+
+### SeaweedFS Authentication
+
+The SeaweedFS client supports authentication, but it is not configured through `fs.seaweed.*` properties. The client reads a `security.toml` file from `./security.toml`, `~/.seaweedfs/security.toml`, or `/etc/seaweedfs/security.toml`, in that order, and supports:
+
+- gRPC mutual TLS: `grpc.ca`, `grpc.client.cert`, and `grpc.client.key`.
+- HTTPS to the volume servers: `https.client.enabled`, `https.client.ca`, `https.client.cert`, and `https.client.key`.
+- HTTP Basic Auth, for a filer behind a reverse proxy: `basic_auth.username` and `basic_auth.password`.
+
+To use it, mount a `security.toml` and the certificate files it references into the Hive Metastore pod, for example with `secretMounts`. Set `fs.seaweed.filer.cn` in the core-site if the filer certificate name does not match `fs.seaweed.filer.host`. With a reverse proxy, also set `fs.seaweed.volume.server.access` to `filerProxy`.
+
+`s3InitJob` does not support these settings. It connects over plain `http` without credentials, so with an authenticated filer, create the warehouse directory manually and keep `s3InitJob` disabled.
+
+See the [SeaweedFS Hadoop client source](https://github.com/seaweedfs/seaweedfs/tree/master/other/java/client/src/main/java/seaweedfs/client) for details.
 
 # Installation
 
