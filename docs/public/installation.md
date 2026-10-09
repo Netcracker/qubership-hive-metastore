@@ -566,11 +566,11 @@ TLS configuration is described in [Configure Connections to Use SSL/TLS](#s3)
 
 ## SeaweedFS Storage
 
-Hive Metastore can store its warehouse in SeaweedFS through the native `seaweedfs://` filesystem instead of the S3 API. The image includes the `seaweedfs-hadoop3-client` jar. The client talks to the SeaweedFS filer over gRPC (port `18888` by default).
+Hive Metastore can store its warehouse in **SeaweedFS** using the native `seaweedfs://` filesystem instead of the S3 API. The Docker image ships with the `seaweedfs-hadoop3-client` JAR, which communicates with the SeaweedFS filer over gRPC (default port `18888`).
 
-The example below is a minimal configuration that works with a filer without authentication. If the filer requires authentication, additional configuration is needed. See [Authentication](#seaweedfs-authentication).
+Below is a minimal configuration that works with a filer **without authentication**. If your filer requires authentication, additional steps are necessary – see the *SeaweedFS Authentication* subsection.
 
-Set the warehouse directory to a `seaweedfs://` URI and replace the S3 Hadoop properties with the SeaweedFS ones:
+Set the warehouse directory to a `seaweedfs://` URI and replace the S3‑specific Hadoop properties with the SeaweedFS equivalents:
 
 ```yaml
 s3:
@@ -605,21 +605,27 @@ metastoreConfigsecret:
     </configuration>
 ```
 
-With a `seaweedfs://` warehouse, `s3InitJob` creates the directory through the filer HTTP API (`http://<host>:<port>`) and ignores `s3.endpoint`, `s3.accessKey`, `s3.secretKey`, and `s3InitJob.awsSigV4`. The job does nothing if the directory already exists.
+When a `seaweedfs://` warehouse is used, **`s3InitJob`** creates the directory via the filer's HTTP API (`http://<host>:<port>`). In this mode the job ignores `s3.endpoint`, `s3.accessKey`, `s3.secretKey`, and `s3InitJob.awsSigV4`. If the directory already exists, the job simply does nothing.
 
 ### SeaweedFS Authentication
 
-The SeaweedFS client supports authentication, but it is not configured through `fs.seaweed.*` properties. The client reads a `security.toml` file from `./security.toml`, `~/.seaweedfs/security.toml`, or `/etc/seaweedfs/security.toml`, in that order, and supports:
+The SeaweedFS client does support authentication, but it is **not** configured through the `fs.seaweed.*` properties. Instead, the client reads a `security.toml` file from one of the following locations (checked in order):
 
-- gRPC mutual TLS: `grpc.ca`, `grpc.client.cert`, and `grpc.client.key`.
-- HTTPS to the volume servers: `https.client.enabled`, `https.client.ca`, `https.client.cert`, and `https.client.key`.
-- HTTP Basic Auth, for a filer behind a reverse proxy: `basic_auth.username` and `basic_auth.password`.
+1. `./security.toml`
+2. `~/.seaweedfs/security.toml`
+3. `/etc/seaweedfs/security.toml`
 
-To use it, mount a `security.toml` and the certificate files it references into the Hive Metastore pod, for example with `secretMounts`. Set `fs.seaweed.filer.cn` in the core-site if the filer certificate name does not match `fs.seaweed.filer.host`. With a reverse proxy, also set `fs.seaweed.volume.server.access` to `filerProxy`.
+The file can contain settings for:
 
-`s3InitJob` does not support these settings. It connects over plain `http` without credentials, so with an authenticated filer, create the warehouse directory manually and keep `s3InitJob` disabled.
+* **gRPC mutual TLS** – `grpc.ca`, `grpc.client.cert`, and `grpc.client.key`.
+* **HTTPS to volume servers** – `https.client.enabled`, `https.client.ca`, `https.client.cert`, and `https.client.key`.
+* **HTTP Basic Auth** (useful when the filer sits behind a reverse proxy) – `basic_auth.username` and `basic_auth.password`.
 
-See the [SeaweedFS Hadoop client source](https://github.com/seaweedfs/seaweedfs/tree/master/other/java/client/src/main/java/seaweedfs/client) for details.
+To use these credentials, mount a `security.toml` (and any referenced certificates) into the Hive Metastore pod, for example via `secretMounts`. If the filer's TLS certificate name differs from `fs.seaweed.filer.host`, set `fs.seaweed.filer.cn` in the core‑site configuration. When a reverse proxy is employed, also set `fs.seaweed.volume.server.access` to `filerProxy`.
+
+**Important:** `s3InitJob` does **not** understand the authentication settings described above; it always connects over plain HTTP without credentials. Therefore, if your filer requires authentication, create the warehouse directory manually and keep `s3InitJob` disabled.
+
+For further details, refer to the [SeaweedFS Hadoop client source](https://github.com/seaweedfs/seaweedfs/tree/master/other/java/client/src/main/java/seaweedfs/client).
 
 # Installation
 
