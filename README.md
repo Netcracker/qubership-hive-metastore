@@ -10,8 +10,6 @@ Qubership Hive-Metastore is a comprehensive solution for deploying [Hive-Metasto
 
 In Kubernetes Qubership Hive-Metastore uses Minio S3 storage to use data and PostgreSQL to store metadata.
 
-The table below shows services in K8s that can potentially replaces services in Hadoop cluster.
-
 **Note** [Apache Hive](https://github.com/apache/hive) contains two large parts, hive-metastore and hiveServer2. This project contains only hive-metastore and does not hiveServer2 libraries. Hive-metastore libraries can be found at https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore-server .
 
 ## Repository structure

@@ -17,6 +17,11 @@ FROM alpine:latest AS unpacker
 ENV HADOOP_VERSION=3.4.3
 ENV HIVE_VERSION=4.2.1
 ENV SEAWEEDFS_VERSION=4.38
+ENV NETTY_VERSION=4.1.138.Final
+ENV SNAPPY_VERSION=1.1.10.10
+ENV ZSTD_JNI_VERSION=1.5.7-14
+ENV ANT_VERSION=1.10.18
+ENV BCPROV_VERSION=1.86
 ENV MAVEN_REPO=https://repo1.maven.org/maven2
 
 
@@ -40,6 +45,35 @@ RUN mkdir -p /opt/hadoop /opt/hive-metastore && \
     ln -s /opt/postgresql-42.7.13/postgresql-42.7.13.jar /opt/hive-metastore/lib/ && \
     mkdir -p /opt/hive-metastore-metrics/metrics \
     && sed -i '/export HADOOP_OPTS="\$METASTORE_HADOOP_OPTS \$HADOOP_OPTS"/a\  export HADOOP_OPTS="\$HADOOP_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9025 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -javaagent:\/opt\/hive-metastore\/lib\/jmx_prometheus_javaagent-1.0.1.jar=9028:\/opt\/hive-metastore\/conf\/jmx-exporter-config.yaml -Dcom.sun.management.jmxremote.ssl=false"' /opt/hive-metastore/bin/ext/metastore.sh
+
+# Replace bundled jars that carry high or critical CVEs with patched releases of the same minor line.
+# Every Netty module is replaced together so the modules stay on one version.
+RUN set -e; \
+    fetch() { curl -fsSL "$MAVEN_REPO/$1" --output "$2"; }; \
+    for old in $(find /opt/hadoop -name 'netty-*-4.1.127.Final*.jar'); do \
+        name=$(basename "$old"); \
+        artifact=${name%%-4.1.127.Final*}; \
+        suffix=${name#"$artifact-4.1.127.Final"}; \
+        fetch "io/netty/$artifact/$NETTY_VERSION/$artifact-$NETTY_VERSION$suffix" "$(dirname "$old")/$artifact-$NETTY_VERSION$suffix"; \
+        rm "$old"; \
+    done; \
+    for old in $(find /opt/hadoop -name 'snappy-java-*.jar'); do \
+        fetch "org/xerial/snappy/snappy-java/$SNAPPY_VERSION/snappy-java-$SNAPPY_VERSION.jar" "$(dirname "$old")/snappy-java-$SNAPPY_VERSION.jar"; \
+        rm "$old"; \
+    done; \
+    for old in $(find /opt/hadoop /opt/hive-metastore -name 'zstd-jni-*.jar'); do \
+        fetch "com/github/luben/zstd-jni/$ZSTD_JNI_VERSION/zstd-jni-$ZSTD_JNI_VERSION.jar" "$(dirname "$old")/zstd-jni-$ZSTD_JNI_VERSION.jar"; \
+        rm "$old"; \
+    done; \
+    for old in $(find /opt/hadoop -name 'bcprov-jdk18on-*.jar'); do \
+        fetch "org/bouncycastle/bcprov-jdk18on/$BCPROV_VERSION/bcprov-jdk18on-$BCPROV_VERSION.jar" "$(dirname "$old")/bcprov-jdk18on-$BCPROV_VERSION.jar"; \
+        rm "$old"; \
+    done; \
+    for artifact in ant ant-launcher; do \
+        fetch "org/apache/ant/$artifact/$ANT_VERSION/$artifact-$ANT_VERSION.jar" "/opt/hive-metastore/lib/$artifact-$ANT_VERSION.jar"; \
+        rm "/opt/hive-metastore/lib/$artifact-1.10.13.jar"; \
+    done; \
+    chmod -R a+rX /opt/hadoop /opt/hive-metastore
 
 # The shaded SeaweedFS Hadoop client bundles its own gRPC classes. Hive's grpc-*.jar files load
 # first and cause a NoSuchMethodError in ProtoUtils.marshaller when the metastore opens seaweedfs://
