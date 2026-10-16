@@ -98,7 +98,8 @@ RUN set -ex && \
         procps \
         postgresql-client \
         openssl \
-        libssl3t64 && \
+        libssl3t64 \
+        libnss-wrapper && \
     rm -rf /var/lib/apt/lists/*
 
 RUN groupadd ${HIVE_USER_NAME} --gid 10002 && \
