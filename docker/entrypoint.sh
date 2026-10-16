@@ -13,6 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+attempt_setup_fake_passwd_entry() {
+  # Check whether there is a passwd entry for the container UID
+  local myuid; myuid="$(id -u)"
+  # If there is no passwd entry for the container UID, attempt to fake one.
+  # It's to resolve the OpenShift random UID case. The approach is the same as in the Spark image.
+  # Hadoop fails to log in without a passwd entry for the UID.
+  # See also: https://github.com/docker-library/postgres/pull/448
+  if ! getent passwd "$myuid" &> /dev/null; then
+      local wrapper
+      for wrapper in {/usr,}/lib{/*,}/libnss_wrapper.so; do
+        if [ -s "$wrapper" ]; then
+          NSS_WRAPPER_PASSWD="$(mktemp)"
+          NSS_WRAPPER_GROUP="$(mktemp)"
+          export LD_PRELOAD="$wrapper" NSS_WRAPPER_PASSWD NSS_WRAPPER_GROUP
+          local mygid; mygid="$(id -g)"
+          printf '%s:x:%s:%s:%s:%s:/bin/false\n' "${HIVE_USER_NAME:-metastore}" "$myuid" "$mygid" "anonymous uid" "${HIVE_HOME:-/opt/hive-metastore}" > "$NSS_WRAPPER_PASSWD"
+          printf '%s:x:%s:\n' "${HIVE_USER_NAME:-metastore}" "$mygid" > "$NSS_WRAPPER_GROUP"
+          break
+        fi
+      done
+  fi
+}
+
+attempt_setup_fake_passwd_entry
+
 WRITABLE_CACERTS="/java-security/cacerts"
 ORIGINAL_CACERTS="${JAVA_HOME}/lib/security/cacerts"
 
