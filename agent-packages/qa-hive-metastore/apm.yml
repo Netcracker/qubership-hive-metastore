@@ -1,0 +1,11 @@
+name: qa-hive-metastore
+version: 1.0.0
+description: QA guidance for the Qubership Hive Metastore Helm deployment — verification when no automated tests exist, schema init/upgrade paths, S3 and SeaweedFS warehouse configuration, and TLS.
+targets:
+- claude
+- copilot
+- cursor
+dependencies:
+  apm: []
+  mcp: []
+includes: auto

@@ -1,6 +1,7 @@
 ## Table of Contents
 
 * [Overview](#overview)
+* [Upgrade version](#upgrade-version)
 * [Architecture](docs/public/architecture.md)
 * [Installation Guide](docs/public/installation.md)
 
@@ -11,6 +12,13 @@ Qubership Hive-Metastore is a comprehensive solution for deploying [Hive-Metasto
 In Kubernetes Qubership Hive-Metastore uses Minio S3 storage to use data and PostgreSQL to store metadata.
 
 **Note** [Apache Hive](https://github.com/apache/hive) contains two large parts, hive-metastore and hiveServer2. This project contains only hive-metastore and does not hiveServer2 libraries. Hive-metastore libraries can be found at https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore-server .
+
+## Upgrade version
+
+1) Update the upstream versions (`HADOOP_VERSION`, `HIVE_VERSION`, `SEAWEEDFS_VERSION`) in [docker/Dockerfile](/docker/Dockerfile) and re-check the patched JAR overrides.
+2) Verify that the chart deploys and integrates with all dependent services (Trino, Spark, Airflow).
+3) Update the pinned versions in the QA skill [qa-hive-metastore SKILL.md](/agent-packages/qa-hive-metastore/.apm/skills/qa-hive-metastore/SKILL.md): the "The component" paragraph repeats the upstream pins and the client example pinned to Hive metastore 3.1.3. Grep the skill for the old version to be sure nothing else drifted.
+4) Update documentation if needed.
 
 ## Repository structure
 
